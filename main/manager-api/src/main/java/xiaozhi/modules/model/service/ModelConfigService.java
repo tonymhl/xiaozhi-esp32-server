@@ -1,6 +1,7 @@
 package xiaozhi.modules.model.service;
 
 import java.util.List;
+import java.util.Map;
 
 import xiaozhi.common.page.PageData;
 import xiaozhi.common.service.BaseService;
@@ -35,27 +36,23 @@ public interface ModelConfigService extends BaseService<ModelConfigEntity> {
     /**
      * 根据ID获取模型配置
      * 
-     * @param id          模型ID
-     * @param isCache     是否缓存
-     * @param isMaskSensitive 是否掩码敏感信息
+     * @param id 模型ID
      * @return 模型配置实体
      */
-    ModelConfigEntity getModelById(String id, boolean isCache, boolean isMaskSensitive);
+    ModelConfigEntity getModelByIdFromCache(String id);
 
     /**
-     * 根据ID获取模型配置（默认掩码敏感信息）
-     * 
-     * @param id          模型ID
-     * @param isCache     是否缓存
-     * @return 模型配置实体
-     */
-    ModelConfigEntity getModelById(String id, boolean isCache);
-    
-    /**
      * 设置默认模型
-     * 
-     * @param modelType   模型类型
-     * @param isDefault   是否默认（1:是，0:否）
+     *
+     * @param modelType 模型类型
+     * @param isDefault 是否默认（1:是，0:否）
      */
     void setDefaultModel(String modelType, int isDefault);
+
+    /**
+     * 获取符合条件的TTS平台列表
+     *
+     * @return TTS平台列表(id和modelName)
+     */
+    List<Map<String, Object>> getTtsPlatformList();
 }
