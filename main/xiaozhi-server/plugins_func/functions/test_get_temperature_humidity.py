@@ -10,7 +10,7 @@ get_temperature_humidity 函数单元测试
 import unittest
 import json
 from unittest.mock import Mock
-from get_temperature_humidity import (
+from plugins_func.functions.get_temperature_humidity import (
     parse_temperature,
     parse_humidity,
     validate_temperature,

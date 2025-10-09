@@ -44,14 +44,14 @@ GET_TEMPERATURE_HUMIDITY_FUNCTION_DESC = {
 
 def parse_temperature(temp_str):
     """从字符串中提取温度数值
-    
+
     支持格式：
     - 22度、22℃、22摄氏度
     - 数字：22、22.5
     """
     if temp_str is None:
         return None, None
-    
+
     # 尝试匹配温度
     # 匹配：22度、22℃、22摄氏度、22.5度等
     match = re.search(r'(-?\d+(?:\.\d+)?)\s*(?:度|℃|摄氏度|°C|°c)?', str(temp_str))
@@ -64,14 +64,14 @@ def parse_temperature(temp_str):
 
 def parse_humidity(humidity_str):
     """从字符串中提取湿度数值
-    
+
     支持格式：
     - 60%、60
     - 百分之六十（需要LLM已转换为数字）
     """
     if humidity_str is None:
         return None, None
-    
+
     # 尝试匹配湿度
     match = re.search(r'(\d+(?:\.\d+)?)\s*%?', str(humidity_str))
     if match:
@@ -133,12 +133,12 @@ def get_temperature_humidity(
     try:
         # 初始化状态
         state = initialize_temp_humidity_state(conn)
-        
+
         logger.bind(tag=TAG).debug(
             f"get_temperature_humidity调用: temperature={temperature}, "
             f"humidity={humidity}, confirm={confirm}, cancel={cancel}"
         )
-        
+
         # 处理取消操作
         if cancel:
             clear_temp_humidity_state(conn)
@@ -148,7 +148,7 @@ def get_temperature_humidity(
                 result="已取消温湿度设置",
                 response="好的，已取消温湿度设置",
             )
-        
+
         # 更新温度
         if temperature is not None:
             temp_value, temp_formatted = parse_temperature(temperature)
@@ -166,7 +166,7 @@ def get_temperature_humidity(
                 logger.bind(tag=TAG).info(f"温度已更新: {temp_formatted}")
             else:
                 logger.bind(tag=TAG).warning(f"无法解析温度: {temperature}")
-        
+
         # 更新湿度
         if humidity is not None:
             humidity_value, humidity_formatted = parse_humidity(humidity)
@@ -184,11 +184,11 @@ def get_temperature_humidity(
                 logger.bind(tag=TAG).info(f"湿度已更新: {humidity_formatted}")
             else:
                 logger.bind(tag=TAG).warning(f"无法解析湿度: {humidity}")
-        
+
         # 检查当前状态
         has_temperature = state["temperature"] is not None
         has_humidity = state["humidity"] is not None
-        
+
         # 情况1：用户确认，且已有完整参数
         if confirm and has_temperature and has_humidity:
             result_json = {
@@ -197,22 +197,22 @@ def get_temperature_humidity(
                 "confirm": True,
             }
             logger.bind(tag=TAG).info(f"温湿度设置完成: {result_json}")
-            
+
             # 清除状态
             clear_temp_humidity_state(conn)
-            
+
             # 返回JSON结果
             return ActionResponse(
                 action=Action.RESPONSE,
                 result="温湿度设置成功",
                 response=json.dumps(result_json, ensure_ascii=False),
             )
-        
+
         # 情况2：已有完整参数，但用户未确认
         if has_temperature and has_humidity:
             if state["stage"] != "confirming":
                 state["stage"] = "confirming"
-            
+
             confirm_message = (
                 f"根据以下参数回复用户：\n"
                 f"温度: {state['temperature']}\n"
@@ -224,7 +224,7 @@ def get_temperature_humidity(
                 result=confirm_message,
                 response=None,
             )
-        
+
         # 情况3：只有温度，缺少湿度
         if has_temperature and not has_humidity:
             state["stage"] = "collecting"
@@ -238,7 +238,7 @@ def get_temperature_humidity(
                 result=prompt_message,
                 response=None,
             )
-        
+
         # 情况4：只有湿度，缺少温度
         if has_humidity and not has_temperature:
             state["stage"] = "collecting"
@@ -252,7 +252,7 @@ def get_temperature_humidity(
                 result=prompt_message,
                 response=None,
             )
-        
+
         # 情况5：两个参数都没有
         state["stage"] = "collecting"
         initial_message = (
@@ -265,7 +265,7 @@ def get_temperature_humidity(
             result=initial_message,
             response=None,
         )
-    
+
     except Exception as e:
         logger.bind(tag=TAG).error(f"get_temperature_humidity执行出错: {e}")
         # 清除状态，避免影响后续操作

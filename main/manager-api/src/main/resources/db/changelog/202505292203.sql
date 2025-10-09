@@ -163,6 +163,16 @@ VALUES ('SYSTEM_PLUGIN_HA_PLAY_MUSIC',
         JSON_ARRAY(),
         70, 0, NOW(), 0, NOW());
 
+-- 7. 温湿度设置
+INSERT INTO ai_model_provider (id, model_type, provider_code, name, fields,
+                               sort, creator, create_date, updater, update_date)
+VALUES ('SYSTEM_PLUGIN_TEMP_HUMIDITY',
+        'Plugin',
+        'get_temperature_humidity',
+        '温湿度设置',
+        JSON_ARRAY(),
+        80, 0, NOW(), 0, NOW());
+
 
 -- ===============================
 -- 二、删除sys_params中旧的plugins.*参数
