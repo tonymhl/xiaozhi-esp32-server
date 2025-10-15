@@ -1,0 +1,165 @@
+# Docker离线部署配置文件
+# 小智ESP32服务器 - 全模块部署
+
+version: '3'
+services:
+  # Server模块 - Python服务
+  xiaozhi-esp32-server:
+    image: xiaozhi-esp32-server:server_custom
+    container_name: xiaozhi-esp32-server
+    depends_on:
+      - xiaozhi-esp32-server-db
+      - xiaozhi-esp32-server-redis
+    restart: always
+    networks:
+      - default
+    ports:
+      # WebSocket服务端
+      - "8000:8000"
+      # HTTP服务的端口，用于视觉分析接口
+      - "8003:8003"
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      # 配置文件目录
+      - ./data:/opt/xiaozhi-esp32-server/data
+      # 模型文件挂接，很重要
+      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Web模块 - Vue前端 + Java后端
+  xiaozhi-esp32-server-web:
+    image: xiaozhi-esp32-server:web_custom
+    container_name: xiaozhi-esp32-server-web
+    restart: always
+    networks:
+      - default
+    depends_on:
+      xiaozhi-esp32-server-db:
+        condition: service_healthy
+      xiaozhi-esp32-server-redis:
+        condition: service_healthy
+    ports:
+      # Web管理控制台
+      - "8002:8002"
+    environment:
+      - TZ=Asia/Shanghai
+      - SPRING_DATASOURCE_DRUID_URL=jdbc:mysql://xiaozhi-esp32-server-db:3306/xiaozhi_esp32_server?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=30000&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+      - SPRING_DATASOURCE_DRUID_USERNAME=root
+      - SPRING_DATASOURCE_DRUID_PASSWORD=123456
+      - SPRING_DATA_REDIS_HOST=xiaozhi-esp32-server-redis
+      - SPRING_DATA_REDIS_PASSWORD=
+      - SPRING_DATA_REDIS_PORT=6379
+    volumes:
+      # 上传文件目录
+      - ./uploadfile:/uploadfile
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 数据库模块 - MySQL
+  xiaozhi-esp32-server-db:
+    image: mysql:latest
+    container_name: xiaozhi-esp32-server-db
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    networks:
+      - default
+    expose:
+      - 3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=xiaozhi_esp32_server
+      - MYSQL_INITDB_ARGS="--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=1000
+      - --innodb_buffer_pool_size=512M
+      - --innodb_log_file_size=128M
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis模块 - 缓存服务
+  xiaozhi-esp32-server-redis:
+    image: redis:latest
+    container_name: xiaozhi-esp32-server-redis
+    restart: always
+    networks:
+      - default
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command:
+      - redis-server
+      - --maxmemory 512mb
+      - --maxmemory-policy allkeys-lru
+      - --save 900 1
+      - --save 300 10
+      - --save 60 10000
+    volumes:
+      - ./redis/data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    driver: bridge
+
