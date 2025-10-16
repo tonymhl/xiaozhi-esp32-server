@@ -1,4 +1,4 @@
-##############################################################################
+﻿##############################################################################
 # 小智ESP32服务器 - 离线部署包自动打包脚本 (Windows PowerShell)
 # 用途: 在有网络的环境中，一键打包所有需要的Docker镜像和配置文件
 ##############################################################################
@@ -47,7 +47,7 @@ function Print-Title {
 # 检查命令是否存在
 function Test-Command {
     param([string]$Command)
-    
+
     $exists = $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
     return $exists
 }
@@ -55,19 +55,19 @@ function Test-Command {
 # 检查必要工具
 function Test-Requirements {
     Print-Title "检查系统环境"
-    
+
     Print-Info "检查Docker..."
     if (-not (Test-Command "docker")) {
         Print-Error "Docker未安装，请先安装Docker Desktop"
         exit 1
     }
-    
+
     Print-Info "检查Docker Compose..."
     if (-not (Test-Command "docker-compose")) {
         Print-Error "Docker Compose未安装，请先安装Docker Desktop"
         exit 1
     }
-    
+
     Print-Success "所有必要工具已就绪"
 }
 
@@ -81,13 +81,13 @@ function Get-ProjectRoot {
 # 创建打包目录
 function New-PackageDirectory {
     Print-Title "创建打包目录"
-    
+
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     $global:PackageName = "xiaozhi-offline-deployment-$timestamp"
     $global:PackageDir = Join-Path $global:ProjectRoot $global:PackageName
-    
+
     Print-Info "创建目录: $global:PackageDir"
-    
+
     New-Item -ItemType Directory -Path $global:PackageDir -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "images") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "scripts") -Force | Out-Null
@@ -95,127 +95,139 @@ function New-PackageDirectory {
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "mysql\data") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "uploadfile") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "models\SenseVoiceSmall") -Force | Out-Null
-    
+
     Print-Success "打包目录创建完成"
 }
 
 # 编译Docker镜像
 function Build-DockerImages {
     Print-Title "编译Docker镜像"
-    
+
     Set-Location $global:ProjectRoot
-    
+
     Print-Info "编译xiaozhi-esp32-server镜像..."
     docker build -t xiaozhi-esp32-server:server_custom -f .\Dockerfile-server .
-    
+
     Print-Info "编译xiaozhi-esp32-server-web镜像..."
     docker build -t xiaozhi-esp32-server:web_custom -f .\Dockerfile-web .
-    
+
     Print-Success "所有镜像编译完成"
 }
 
 # 拉取基础镜像
 function Get-BaseImages {
     Print-Title "拉取基础镜像"
-    
+
     Print-Info "拉取MySQL镜像..."
     docker pull mysql:latest
-    
+
     Print-Info "拉取Redis镜像..."
     docker pull redis:latest
-    
+
     Print-Success "基础镜像拉取完成"
 }
 
 # 导出Docker镜像
 function Export-DockerImages {
     Print-Title "导出Docker镜像"
-    
+
     $imagesDir = Join-Path $global:PackageDir "images"
-    
+
     Print-Info "导出xiaozhi-esp32-server镜像..."
     docker save xiaozhi-esp32-server:server_custom -o (Join-Path $imagesDir "server.tar")
-    
+
     Print-Info "导出xiaozhi-esp32-server-web镜像..."
     docker save xiaozhi-esp32-server:web_custom -o (Join-Path $imagesDir "web.tar")
-    
+
     Print-Info "导出MySQL镜像..."
     docker save mysql:latest -o (Join-Path $imagesDir "mysql.tar")
-    
+
     Print-Info "导出Redis镜像..."
     docker save redis:latest -o (Join-Path $imagesDir "redis.tar")
-    
+
     Print-Success "所有镜像导出完成"
 }
 
 # 复制配置文件
 function Copy-ConfigFiles {
     Print-Title "复制配置文件"
-    
+
     Print-Info "复制docker-compose配置..."
     $composeSource = Join-Path $global:ProjectRoot "main\xiaozhi-server\docker-compose_all.yml"
     $composeDest = Join-Path $global:PackageDir "docker-compose-offline.yml"
-    Copy-Item $composeSource $composeDest
-    
+    Copy-Item $composeSource $composeDest -Force
+
     # 修改docker-compose配置，使用自定义镜像
     $composeContent = Get-Content $composeDest -Raw
     $composeContent = $composeContent -replace 'ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:server_latest', 'xiaozhi-esp32-server:server_custom'
     $composeContent = $composeContent -replace 'ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:web_latest', 'xiaozhi-esp32-server:web_custom'
-    Set-Content -Path $composeDest -Value $composeContent
-    
+    Set-Content -Path $composeDest -Value $composeContent -Encoding UTF8
+
     Print-Info "复制应用配置文件..."
     $configYaml = Join-Path $global:ProjectRoot "main\xiaozhi-server\config.yaml"
     if (Test-Path $configYaml) {
-        Copy-Item $configYaml (Join-Path $global:PackageDir "data\")
+        Copy-Item $configYaml (Join-Path $global:PackageDir "data\") -Force
     }
-    
+
     $configFromApi = Join-Path $global:ProjectRoot "main\xiaozhi-server\config_from_api.yaml"
     if (Test-Path $configFromApi) {
-        Copy-Item $configFromApi (Join-Path $global:PackageDir "data\")
+        Copy-Item $configFromApi (Join-Path $global:PackageDir "data\") -Force
     }
-    
+
     Print-Info "复制部署脚本..."
-    Copy-Item (Join-Path $global:ProjectRoot "scripts\offline-deploy.sh") $global:PackageDir
-    Copy-Item (Join-Path $global:ProjectRoot "scripts\install-docker-centos.sh") $global:PackageDir
-    Copy-Item (Join-Path $global:ProjectRoot "scripts\backup.sh") (Join-Path $global:PackageDir "scripts\")
-    
+    Copy-Item (Join-Path $global:ProjectRoot "scripts\offline-deploy.sh") $global:PackageDir -Force
+    Copy-Item (Join-Path $global:ProjectRoot "scripts\install-docker-centos.sh") $global:PackageDir -Force
+    Copy-Item (Join-Path $global:ProjectRoot "scripts\backup.sh") (Join-Path $global:PackageDir "scripts\") -Force
+
     Print-Info "复制文档..."
-    Copy-Item (Join-Path $global:ProjectRoot "docs\offline-deployment-guide.md") $global:PackageDir
-    
+    $docPath = Join-Path $global:ProjectRoot "docs\offline-deployment-guide.md"
+    if (Test-Path $docPath) {
+        Copy-Item $docPath $global:PackageDir -Force
+    } else {
+        Print-Warning "未找到离线部署指南文档"
+    }
+
     Print-Info "复制模型文件..."
     $modelsDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\models"
     if (Test-Path $modelsDir) {
-        Copy-Item "$modelsDir\*" (Join-Path $global:PackageDir "models\") -Recurse -ErrorAction SilentlyContinue
+        Copy-Item (Join-Path $modelsDir "*") (Join-Path $global:PackageDir "models\") -Recurse -Force -ErrorAction SilentlyContinue
+        Print-Success "模型文件复制完成"
     } else {
         Print-Warning "没有找到模型文件，请手动添加"
     }
-    
+
     Print-Info "复制工具函数目录（支持热更新）..."
     $pluginsFuncDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\plugins_func"
     $targetPluginsFuncDir = Join-Path $global:PackageDir "plugins_func"
     if (Test-Path $pluginsFuncDir) {
-        # 创建目标目录
         New-Item -ItemType Directory -Path $targetPluginsFuncDir -Force | Out-Null
         New-Item -ItemType Directory -Path (Join-Path $targetPluginsFuncDir "functions") -Force | Out-Null
-        
-        # 复制functions目录下的所有py文件
+
         $functionsDir = Join-Path $pluginsFuncDir "functions"
         if (Test-Path $functionsDir) {
-            Copy-Item "$functionsDir\*.py" (Join-Path $targetPluginsFuncDir "functions\") -ErrorAction SilentlyContinue
+            Copy-Item (Join-Path $functionsDir "*.py") (Join-Path $targetPluginsFuncDir "functions\") -Force -ErrorAction SilentlyContinue
             Print-Success "已复制工具函数文件"
         }
-        
-        # 复制register.py
+
         $registerFile = Join-Path $pluginsFuncDir "register.py"
         if (Test-Path $registerFile) {
-            Copy-Item $registerFile $targetPluginsFuncDir
+            Copy-Item $registerFile $targetPluginsFuncDir -Force
             Print-Success "已复制register.py"
         }
     } else {
         Print-Warning "未找到plugins_func目录"
     }
-    
+
     Print-Success "配置文件复制完成"
+}
+
+function Get-FileSizeGb {
+    param([string]$Path)
+
+    if (Test-Path $Path) {
+        return (Get-Item $Path).Length / 1GB
+    }
+    return 0
 }
 
 function New-DeploymentManifest {
@@ -224,13 +236,11 @@ function New-DeploymentManifest {
     $imagesDir = Join-Path $global:PackageDir "images"
     $manifestFile = Join-Path $global:PackageDir "DEPLOYMENT-MANIFEST.txt"
 
-    # 计算文件大小（GB）
-    $serverSize = (Get-Item (Join-Path $imagesDir "server.tar")).Length / 1GB
-    $webSize    = (Get-Item (Join-Path $imagesDir "web.tar")).Length    / 1GB
-    $mysqlSize  = (Get-Item (Join-Path $imagesDir "mysql.tar")).Length  / 1GB
-    $redisSize  = (Get-Item (Join-Path $imagesDir "redis.tar")).Length  / 1GB
+    $serverSize = Get-FileSizeGb (Join-Path $imagesDir "server.tar")
+    $webSize    = Get-FileSizeGb (Join-Path $imagesDir "web.tar")
+    $mysqlSize  = Get-FileSizeGb (Join-Path $imagesDir "mysql.tar")
+    $redisSize  = Get-FileSizeGb (Join-Path $imagesDir "redis.tar")
 
-    # 使用数组和Join方法避免Here-String语法问题
     $manifestContent = @(
         "========================================"
         "小智ESP32服务器 - 离线部署包清单"
@@ -316,7 +326,7 @@ function New-DeploymentManifest {
         ""
         "========================================"
     )
-    
+
     $manifestContent -join "`r`n" | Set-Content -Path $manifestFile -Encoding UTF8
 
     Print-Success "部署清单生成完成"
@@ -325,8 +335,7 @@ function New-DeploymentManifest {
 # 生成快速README
 function New-ReadmeFile {
     $readmeFile = Join-Path $global:PackageDir "README.txt"
-    
-    # 使用数组避免Here-String语法问题
+
     $readmeContent = @(
         "========================================"
         "小智ESP32服务器 - 离线部署包"
@@ -357,44 +366,43 @@ function New-ReadmeFile {
         "打包时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         "========================================"
     )
-    
+
     $readmeContent -join "`r`n" | Set-Content -Path $readmeFile -Encoding UTF8
-    
+
     Print-Success "README生成完成"
 }
 
 # 创建校验和
 function New-Checksum {
     Print-Title "生成校验和"
-    
+
     $imagesDir = Join-Path $global:PackageDir "images"
     $checksumFile = Join-Path $imagesDir "checksums.md5"
-    
+
     Print-Info "计算镜像文件校验和..."
-    
+
     $checksums = @()
     Get-ChildItem -Path $imagesDir -Filter "*.tar" | ForEach-Object {
         $hash = Get-FileHash -Path $_.FullName -Algorithm MD5
         $checksums += "$($hash.Hash.ToLower())  $($_.Name)"
     }
-    
+
     $checksums -join "`n" | Set-Content -Path $checksumFile -Encoding ASCII
-    
+
     Print-Success "校验和生成完成"
 }
 
 # 压缩打包
 function Compress-Package {
     Print-Title "压缩打包"
-    
+
     Set-Location $global:ProjectRoot
-    
+
     $global:ArchiveName = "$global:PackageName.tar.gz"
-    
+
     Print-Info "压缩中，请稍候..."
     Print-Info "注意: Windows环境需要安装tar工具或使用WSL"
-    
-    # 检查是否有tar命令
+
     if (Test-Command "tar") {
         tar -czf $global:ArchiveName $global:PackageName
         $archiveSize = (Get-Item $global:ArchiveName).Length / 1GB
@@ -412,7 +420,7 @@ function Compress-Package {
 # 清理临时文件
 function Remove-TempFiles {
     Print-Title "清理临时文件"
-    
+
     $response = Read-Host "是否删除临时打包目录? [y/N]"
     if ($response -match "^[Yy]") {
         Remove-Item -Path $global:PackageDir -Recurse -Force
@@ -425,7 +433,7 @@ function Remove-TempFiles {
 # 显示总结
 function Show-Summary {
     Print-Title "打包完成总结"
-    
+
     Write-Host ""
     Write-ColorOutput "✓ 打包成功完成！" "Green"
     Write-Host ""
@@ -448,43 +456,21 @@ function Show-Summary {
 # 主流程
 function Main {
     Print-Title "小智ESP32服务器 - 离线部署包打包工具"
-    
-    # 获取项目根目录
+
     $global:ProjectRoot = Get-ProjectRoot
     Print-Info "项目根目录: $global:ProjectRoot"
-    
-    # 检查环境
+
     Test-Requirements
-    
-    # 创建打包目录
     New-PackageDirectory
-    
-    # 编译镜像
     Build-DockerImages
-    
-    # 拉取基础镜像
     Get-BaseImages
-    
-    # 导出镜像
     Export-DockerImages
-    
-    # 复制配置文件
     Copy-ConfigFiles
-    
-    # 生成清单
     New-DeploymentManifest
     New-ReadmeFile
-    
-    # 创建校验和
     New-Checksum
-    
-    # 压缩打包
     Compress-Package
-    
-    # 清理临时文件
     Remove-TempFiles
-    
-    # 显示总结
     Show-Summary
 }
 
@@ -497,4 +483,3 @@ try {
 }
 
 exit 0
-
