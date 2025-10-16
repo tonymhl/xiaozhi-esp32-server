@@ -137,9 +137,10 @@ create_directories() {
     mkdir -p mysql/data
     mkdir -p uploadfile
     mkdir -p models/SenseVoiceSmall
+    mkdir -p plugins_func/functions
     
     print_info "设置目录权限..."
-    chmod -R 755 data uploadfile models
+    chmod -R 755 data uploadfile models plugins_func
     chmod -R 777 mysql/data  # MySQL需要写入权限
     
     print_success "目录结构创建完成"

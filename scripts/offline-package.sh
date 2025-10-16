@@ -174,6 +174,25 @@ copy_configs() {
         cp -r "${PROJECT_ROOT}/main/xiaozhi-server/models/"* "${PACKAGE_DIR}/models/" 2>/dev/null || print_warning "没有找到模型文件，请手动添加"
     fi
     
+    print_info "复制工具函数目录（支持热更新）..."
+    if [ -d "${PROJECT_ROOT}/main/xiaozhi-server/plugins_func" ]; then
+        mkdir -p "${PACKAGE_DIR}/plugins_func/functions"
+        
+        # 复制functions目录下的所有py文件
+        if [ -d "${PROJECT_ROOT}/main/xiaozhi-server/plugins_func/functions" ]; then
+            cp "${PROJECT_ROOT}/main/xiaozhi-server/plugins_func/functions/"*.py "${PACKAGE_DIR}/plugins_func/functions/" 2>/dev/null
+            print_success "已复制工具函数文件"
+        fi
+        
+        # 复制register.py
+        if [ -f "${PROJECT_ROOT}/main/xiaozhi-server/plugins_func/register.py" ]; then
+            cp "${PROJECT_ROOT}/main/xiaozhi-server/plugins_func/register.py" "${PACKAGE_DIR}/plugins_func/"
+            print_success "已复制register.py"
+        fi
+    else
+        print_warning "未找到plugins_func目录"
+    fi
+    
     print_success "配置文件复制完成"
 }
 

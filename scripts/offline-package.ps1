@@ -190,109 +190,135 @@ function Copy-ConfigFiles {
         Print-Warning "没有找到模型文件，请手动添加"
     }
     
+    Print-Info "复制工具函数目录（支持热更新）..."
+    $pluginsFuncDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\plugins_func"
+    $targetPluginsFuncDir = Join-Path $global:PackageDir "plugins_func"
+    if (Test-Path $pluginsFuncDir) {
+        # 创建目标目录
+        New-Item -ItemType Directory -Path $targetPluginsFuncDir -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $targetPluginsFuncDir "functions") -Force | Out-Null
+        
+        # 复制functions目录下的所有py文件
+        $functionsDir = Join-Path $pluginsFuncDir "functions"
+        if (Test-Path $functionsDir) {
+            Copy-Item "$functionsDir\*.py" (Join-Path $targetPluginsFuncDir "functions\") -ErrorAction SilentlyContinue
+            Print-Success "已复制工具函数文件"
+        }
+        
+        # 复制register.py
+        $registerFile = Join-Path $pluginsFuncDir "register.py"
+        if (Test-Path $registerFile) {
+            Copy-Item $registerFile $targetPluginsFuncDir
+            Print-Success "已复制register.py"
+        }
+    } else {
+        Print-Warning "未找到plugins_func目录"
+    }
+    
     Print-Success "配置文件复制完成"
 }
 
-# 生成部署清单
 function New-DeploymentManifest {
     Print-Title "生成部署清单"
-    
-    $manifestFile = Join-Path $global:PackageDir "DEPLOYMENT-MANIFEST.txt"
+
     $imagesDir = Join-Path $global:PackageDir "images"
-    
+    $manifestFile = Join-Path $global:PackageDir "DEPLOYMENT-MANIFEST.txt"
+
+    # 计算文件大小（GB）
     $serverSize = (Get-Item (Join-Path $imagesDir "server.tar")).Length / 1GB
-    $webSize = (Get-Item (Join-Path $imagesDir "web.tar")).Length / 1GB
-    $mysqlSize = (Get-Item (Join-Path $imagesDir "mysql.tar")).Length / 1GB
-    $redisSize = (Get-Item (Join-Path $imagesDir "redis.tar")).Length / 1GB
+    $webSize    = (Get-Item (Join-Path $imagesDir "web.tar")).Length    / 1GB
+    $mysqlSize  = (Get-Item (Join-Path $imagesDir "mysql.tar")).Length  / 1GB
+    $redisSize  = (Get-Item (Join-Path $imagesDir "redis.tar")).Length  / 1GB
+
+    # 使用数组和Join方法避免Here-String语法问题
+    $manifestContent = @(
+        "========================================"
+        "小智ESP32服务器 - 离线部署包清单"
+        "========================================"
+        ""
+        "打包时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        "打包环境: Windows $([System.Environment]::OSVersion.Version)"
+        ""
+        "========================================"
+        "镜像列表"
+        "========================================"
+        ""
+        "镜像1: xiaozhi-esp32-server:server_custom"
+        "   文件: images/server.tar"
+        "   大小: $("{0:N2}" -f $serverSize) GB"
+        "   说明: Python服务，包含所有工具函数"
+        ""
+        "镜像2: xiaozhi-esp32-server:web_custom"
+        "   文件: images/web.tar"
+        "   大小: $("{0:N2}" -f $webSize) GB"
+        "   说明: Vue前端 + Java后端管理控制台"
+        ""
+        "镜像3: mysql:latest"
+        "   文件: images/mysql.tar"
+        "   大小: $("{0:N2}" -f $mysqlSize) GB"
+        "   说明: MySQL数据库"
+        ""
+        "镜像4: redis:latest"
+        "   文件: images/redis.tar"
+        "   大小: $("{0:N2}" -f $redisSize) GB"
+        "   说明: Redis缓存服务"
+        ""
+        "========================================"
+        "配置文件"
+        "========================================"
+        ""
+        "  docker-compose-offline.yml     : Docker Compose配置"
+        "  data/config.yaml               : 主配置文件"
+        "  data/config_from_api.yaml      : API配置文件"
+        "  offline-deploy.sh              : 自动部署脚本"
+        "  install-docker-centos.sh       : Docker安装脚本"
+        "  scripts/backup.sh              : 数据备份脚本"
+        "  offline-deployment-guide.md    : 详细部署指南"
+        ""
+        "========================================"
+        "快速部署步骤"
+        "========================================"
+        ""
+        "步骤1: 传输本压缩包到目标CentOS服务器"
+        ""
+        "步骤2: 解压"
+        "   tar -xzf $global:PackageName.tar.gz"
+        "   cd $global:PackageName"
+        ""
+        "步骤3: 安装Docker（如未安装）"
+        "   chmod +x install-docker-centos.sh"
+        "   sudo ./install-docker-centos.sh"
+        ""
+        "步骤4: 执行自动部署"
+        "   chmod +x offline-deploy.sh"
+        "   sudo ./offline-deploy.sh"
+        ""
+        "步骤5: 访问服务"
+        "   Web管理界面: http://服务器IP:8002"
+        "   WebSocket服务: ws://服务器IP:8000"
+        "   HTTP服务: http://服务器IP:8003"
+        ""
+        "========================================"
+        "注意事项"
+        "========================================"
+        ""
+        "  确保目标服务器有至少8GB内存和50GB磁盘空间"
+        "  首次启动需要1-3分钟初始化数据库"
+        "  支持热更新：修改宿主机上的配置或工具函数后重启容器即可"
+        "  详细部署说明请参考包内 offline-deployment-guide.md"
+        ""
+        "========================================"
+        "技术支持"
+        "========================================"
+        ""
+        "项目地址: https://github.com/xinnan-tech/xiaozhi-esp32-server"
+        "文档地址: https://github.com/xinnan-tech/xiaozhi-esp32-server/tree/main/docs"
+        ""
+        "========================================"
+    )
     
-    $manifest = @"
-========================================
-小智ESP32服务器 - 离线部署包清单
-========================================
+    $manifestContent -join "`r`n" | Set-Content -Path $manifestFile -Encoding UTF8
 
-打包时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-打包环境: Windows $(([System.Environment]::OSVersion.Version).ToString())
-
-========================================
-镜像列表
-========================================
-
-1. xiaozhi-esp32-server:server_custom
-   文件: images/server.tar
-   大小: $("{0:N2}" -f $serverSize) GB
-   说明: Python服务，包含所有工具函数
-
-2. xiaozhi-esp32-server:web_custom
-   文件: images/web.tar
-   大小: $("{0:N2}" -f $webSize) GB
-   说明: Vue前端 + Java后端管理控制台
-
-3. mysql:latest
-   文件: images/mysql.tar
-   大小: $("{0:N2}" -f $mysqlSize) GB
-   说明: MySQL数据库
-
-4. redis:latest
-   文件: images/redis.tar
-   大小: $("{0:N2}" -f $redisSize) GB
-   说明: Redis缓存服务
-
-========================================
-配置文件
-========================================
-
-- docker-compose-offline.yml     : Docker Compose配置
-- data/config.yaml               : 主配置文件
-- data/config_from_api.yaml      : API配置文件
-- offline-deploy.sh              : 自动部署脚本
-- install-docker-centos.sh       : Docker安装脚本
-- scripts/backup.sh              : 数据备份脚本
-- offline-deployment-guide.md    : 详细部署指南
-
-========================================
-快速部署步骤
-========================================
-
-1. 传输本压缩包到目标CentOS服务器
-
-2. 解压：
-   tar -xzf $global:PackageName.tar.gz
-   cd $global:PackageName
-
-3. 安装Docker（如未安装）：
-   chmod +x install-docker-centos.sh
-   ./install-docker-centos.sh
-
-4. 执行自动部署：
-   chmod +x offline-deploy.sh
-   ./offline-deploy.sh
-
-5. 访问服务：
-   Web管理界面: http://服务器IP:8002
-   WebSocket服务: ws://服务器IP:8000
-   HTTP服务: http://服务器IP:8003
-
-========================================
-注意事项
-========================================
-
-- 确保目标服务器有至少8GB内存和50GB磁盘空间
-- 首次启动需要1-3分钟初始化数据库
-- 如需修改配置，请编辑data/config.yaml
-- 详细部署说明请参考offline-deployment-guide.md
-
-========================================
-技术支持
-========================================
-
-项目地址: https://github.com/xinnan-tech/xiaozhi-esp32-server
-文档地址: https://github.com/xinnan-tech/xiaozhi-esp32-server/tree/main/docs
-
-========================================
-"@
-    
-    Set-Content -Path $manifestFile -Value $manifest -Encoding UTF8
-    
     Print-Success "部署清单生成完成"
 }
 
@@ -300,37 +326,39 @@ function New-DeploymentManifest {
 function New-ReadmeFile {
     $readmeFile = Join-Path $global:PackageDir "README.txt"
     
-    $readme = @"
-========================================
-小智ESP32服务器 - 离线部署包
-========================================
-
-快速部署步骤：
-
-1. 解压本包：
-   tar -xzf xiaozhi-offline-deployment-*.tar.gz
-
-2. 进入目录：
-   cd xiaozhi-offline-deployment-*/
-
-3. 安装Docker（如未安装）：
-   chmod +x install-docker-centos.sh
-   sudo ./install-docker-centos.sh
-
-4. 执行自动部署：
-   chmod +x offline-deploy.sh
-   sudo ./offline-deploy.sh
-
-5. 访问服务：
-   http://服务器IP:8002
-
-详细部署指南请查看：
-offline-deployment-guide.md
-
-打包时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-"@
+    # 使用数组避免Here-String语法问题
+    $readmeContent = @(
+        "========================================"
+        "小智ESP32服务器 - 离线部署包"
+        "========================================"
+        ""
+        "快速部署步骤："
+        ""
+        "步骤1. 解压本包"
+        "   tar -xzf xiaozhi-offline-deployment-*.tar.gz"
+        ""
+        "步骤2. 进入目录"
+        "   cd xiaozhi-offline-deployment-*/"
+        ""
+        "步骤3. 安装Docker（如未安装）"
+        "   chmod +x install-docker-centos.sh"
+        "   sudo ./install-docker-centos.sh"
+        ""
+        "步骤4. 执行自动部署"
+        "   chmod +x offline-deploy.sh"
+        "   sudo ./offline-deploy.sh"
+        ""
+        "步骤5. 访问服务"
+        "   http://服务器IP:8002"
+        ""
+        "详细部署指南请查看："
+        "offline-deployment-guide.md"
+        ""
+        "打包时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        "========================================"
+    )
     
-    Set-Content -Path $readmeFile -Value $readme -Encoding UTF8
+    $readmeContent -join "`r`n" | Set-Content -Path $readmeFile -Encoding UTF8
     
     Print-Success "README生成完成"
 }
