@@ -1,7 +1,61 @@
+# Git相关
 .git
+.gitignore
+
+# Python缓存
 __pycache__
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# 环境变量
 .env
-Dockerfile
+.env.local
+
+# Dockerfile文件
+Dockerfile*
+
+# 临时和缓存目录
 tmp/
+.cache/
+*.log
+
+# 数据目录（运行时生成，不应打包到镜像）
+# 注意：docs/docker/ 目录需要保留用于Docker构建
 data/
+mysql/
+redis/
+uploadfile/
+!docs/docker/
+
+# 特别排除xiaozhi-server下的运行时目录
+main/xiaozhi-server/mysql/
+main/xiaozhi-server/redis/
+main/xiaozhi-server/uploadfile/
+main/xiaozhi-server/tmp/
+main/xiaozhi-server/data/logs/
+main/xiaozhi-server/*.log
+
+# Node模块
+node_modules/
+main/manager-web/node_modules/
+main/manager-mobile/node_modules/
+
+# 构建产物
+main/manager-api/target/
+main/manager-web/dist/
+main/manager-mobile/dist/
+main/manager-mobile/unpackage/
+
+# IDE和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS文件
+.DS_Store
+Thumbs.db
+desktop.ini

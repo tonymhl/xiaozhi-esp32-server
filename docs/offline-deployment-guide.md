@@ -237,6 +237,7 @@ docker-compose --version
 cd /root
 tar -xzf xiaozhi-offline-deployment-*.tar.gz
 cd offline-package
+sed -i 's/\r$//' *.sh scripts/*.sh
 
 # 安装Docker（CentOS 7/8）
 chmod +x install-docker-centos.sh

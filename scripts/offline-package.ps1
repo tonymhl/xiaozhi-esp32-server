@@ -164,14 +164,27 @@ function Copy-ConfigFiles {
     Set-Content -Path $composeDest -Value $composeContent -Encoding UTF8
 
     Print-Info "复制应用配置文件..."
+    
+    # 复制主配置文件
     $configYaml = Join-Path $global:ProjectRoot "main\xiaozhi-server\config.yaml"
     if (Test-Path $configYaml) {
         Copy-Item $configYaml (Join-Path $global:PackageDir "data\") -Force
+        Print-Success "已复制 config.yaml"
     }
 
     $configFromApi = Join-Path $global:ProjectRoot "main\xiaozhi-server\config_from_api.yaml"
     if (Test-Path $configFromApi) {
         Copy-Item $configFromApi (Join-Path $global:PackageDir "data\") -Force
+        Print-Success "已复制 config_from_api.yaml"
+    }
+    
+    # 复制data目录下的隐藏配置文件（如 .config.yaml, .wakeup_words.yaml）
+    $dataDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\data"
+    if (Test-Path $dataDir) {
+        Get-ChildItem -Path $dataDir -Filter ".*" -File -Force | ForEach-Object {
+            Copy-Item $_.FullName (Join-Path $global:PackageDir "data\") -Force
+            Print-Success "已复制 $($_.Name)"
+        }
     }
 
     Print-Info "复制部署脚本..."
@@ -387,9 +400,14 @@ function New-Checksum {
         $checksums += "$($hash.Hash.ToLower())  $($_.Name)"
     }
 
-    $checksums -join "`n" | Set-Content -Path $checksumFile -Encoding ASCII
+    # 使用Unix风格的LF换行符（兼容Linux）
+    $checksumContent = $checksums -join "`n"
+    $checksumContent += "`n"  # 末尾添加一个换行符
+    
+    # 写入文件时使用UTF8无BOM编码，并手动控制换行符
+    [System.IO.File]::WriteAllText($checksumFile, $checksumContent, [System.Text.UTF8Encoding]::new($false))
 
-    Print-Success "校验和生成完成"
+    Print-Success "校验和生成完成（Unix LF格式）"
 }
 
 # 压缩打包

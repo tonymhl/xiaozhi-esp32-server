@@ -150,12 +150,26 @@ copy_configs() {
     rm -f "${PACKAGE_DIR}/docker-compose-offline.yml.bak"
     
     print_info "复制应用配置文件..."
+    
+    # 复制主配置文件
     if [ -f "${PROJECT_ROOT}/main/xiaozhi-server/config.yaml" ]; then
         cp "${PROJECT_ROOT}/main/xiaozhi-server/config.yaml" "${PACKAGE_DIR}/data/"
+        print_success "已复制 config.yaml"
     fi
     
     if [ -f "${PROJECT_ROOT}/main/xiaozhi-server/config_from_api.yaml" ]; then
         cp "${PROJECT_ROOT}/main/xiaozhi-server/config_from_api.yaml" "${PACKAGE_DIR}/data/"
+        print_success "已复制 config_from_api.yaml"
+    fi
+    
+    # 复制data目录下的隐藏配置文件（如 .config.yaml, .wakeup_words.yaml）
+    if [ -d "${PROJECT_ROOT}/main/xiaozhi-server/data" ]; then
+        for hiddenfile in "${PROJECT_ROOT}/main/xiaozhi-server/data"/.*; do
+            if [ -f "$hiddenfile" ]; then
+                cp "$hiddenfile" "${PACKAGE_DIR}/data/"
+                print_success "已复制 $(basename "$hiddenfile")"
+            fi
+        done
     fi
     
     print_info "复制部署脚本..."
