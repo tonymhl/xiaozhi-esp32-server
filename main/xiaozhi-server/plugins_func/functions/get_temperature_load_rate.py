@@ -22,14 +22,17 @@ GET_TEMPERATURE_LOAD_RATE_FUNCTION_DESC = {
     "function": {
         "name": "get_temperature_load_rate",
         "description": (
-            "用于设置温度/负载率参数，并经过用户两次确认后启动AI节能优化。"
+            "【AI节能优化工具】用于设置新工况参数（温度和负载率），启动AI寻优计算。"
+            "⚠️ 重要：只要用户提及温度、负载率、确认、节能优化等相关内容，必须立即调用此函数，不要只是文字回复！"
+            "功能说明：根据用户输入新的温度（℃）和负载率（%），系统设置新工况并启动AI寻优计算。"
             "用户可以：①只设置温度；②只设置负载率；③同时设置温度和负载率；④使用预设推荐值。"
-            "当用户提及'设置温度'、'调整负载率'、'温度负载率设置'、'节能优化'、'确认'、'取消'等词时调用此函数。"
-            "如果用户说“确认/好的/是的/可以/没错/OK/SURE”等肯定词，请必须调用get_temperature_load_rate(confirm=True)进行确认。"
-            "如果用户说“取消/不要/算了/不/错了/NO/CANCEL”等否定词，请必须调用get_temperature_load_rate(cancel=True)进行取消。"
-            "系统支持灵活的参数设置，不强制要求同时提供两个参数，并通过两轮确认（参数确认、AI推荐模式确认）来完成操作。"
-            "如果用户不知道设什么值，或说'随便设置'、'帮我设置'、'用推荐值'、'默认值'等，则使用预设的推荐参数。"
-            "注意：负载率的单位是千瓦(kw)，不是百分比。"
+            "【必须调用的场景】："
+            "- 用户提及'设置温度'、'调整负载率'、'温度XX度'、'负载率XX'等 → 立即调用本函数并传入参数"
+            "- 用户说'确认/好的/是的/可以/没错/授权/同意/OK'等肯定词 → 立即调用get_temperature_load_rate(confirm=True)"
+            "- 用户说'取消/不要/算了/不/错了/拒绝/NO'等否定词 → 立即调用get_temperature_load_rate(cancel=True)"
+            "- 用户说'推荐值/帮我设置/默认值/随便设置' → 立即调用get_temperature_load_rate(use_preset=True)"
+            "【禁止行为】：不要在没有调用此函数的情况下直接文字回复'好的我帮你设置'等内容，必须调用函数！"
+            "注意：负载率的单位是百分比(%)，范围在0%-100%之间。"
         ),
         "parameters": {
             "type": "object",
@@ -40,7 +43,7 @@ GET_TEMPERATURE_LOAD_RATE_FUNCTION_DESC = {
                 },
                 "load_rate": {
                     "type": "string",
-                    "description": "负载率值，单位是千瓦kw（如90kw、95.6千瓦、90）。如果用户没有提供则为空",
+                    "description": "负载率值，单位是百分比%（如90%、95.6%、90）。范围：0%-100%。如果用户没有提供则为空",
                 },
                 "use_preset": {
                     "type": "boolean",
@@ -48,11 +51,11 @@ GET_TEMPERATURE_LOAD_RATE_FUNCTION_DESC = {
                 },
                 "confirm": {
                     "type": "boolean",
-                    "description": "用户是否确认当前操作。当用户说'确认'、'是的'、'对的'、'好的'、'没错'等表示同意时为true",
+                    "description": "用户是否确认授权当前操作。当用户说'确认'、'是的'、'对的'、'好的'、'没错'、'授权'、'同意'等表示同意时为true",
                 },
                 "cancel": {
                     "type": "boolean",
-                    "description": "用户是否取消设置。当用户说'取消'、'不要了'、'算了'等表示放弃时为true",
+                    "description": "用户是否取消设置。当用户说'取消'、'不要了'、'算了'、'拒绝'等表示放弃时为true",
                 },
             },
             "required": [],
@@ -82,20 +85,20 @@ def parse_temperature(temp_str):
 
 
 def parse_load_rate(load_rate_str):
-    """从字符串中提取负载率数值（实际为kw千瓦值）
+    """从字符串中提取负载率数值（百分比）
     
     支持格式：
-    - 90、90.5、90kw、90千瓦
+    - 90、90.5、90%、90percent
     """
     if load_rate_str is None:
         return None, None
     
     # 移除可能的单位，提取数字
-    # 匹配：90、90.5、90kw、90千瓦、90 kw等
-    match = re.search(r'(\d+(?:\.\d+)?)\s*(?:kw|千瓦|KW)?', str(load_rate_str), re.IGNORECASE)
+    # 匹配：90、90.5、90%、90percent、90 %等
+    match = re.search(r'(\d+(?:\.\d+)?)\s*(?:%|percent|百分比)?', str(load_rate_str), re.IGNORECASE)
     if match:
         load_rate_value = float(match.group(1))
-        load_rate_formatted = f"{load_rate_value}kw"
+        load_rate_formatted = f"{load_rate_value}%"
         return load_rate_value, load_rate_formatted
     return None, None
 
@@ -110,11 +113,11 @@ def validate_temperature(temp_value):
 
 
 def validate_load_rate(load_rate_value):
-    """验证负载率（kw值）是否在合理范围内"""
+    """验证负载率（百分比）是否在合理范围内"""
     if load_rate_value is None:
         return True, None
-    if load_rate_value < 0 or load_rate_value > 200:
-        return False, f"负载率{load_rate_value}kw超出合理范围（0~200kw），请重新输入"
+    if load_rate_value < 0 or load_rate_value > 100:
+        return False, f"负载率{load_rate_value}%超出合理范围（0%-100%），请重新输入"
     return True, None
 
 
@@ -251,9 +254,9 @@ def clear_temp_load_rate_state(conn):
     ToolType.SYSTEM_CTL,
 )
 def get_temperature_load_rate(
-    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = False, cancel: bool = False
+    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = True, cancel: bool = False
 ):
-    """获取温度和负载率参数，集成API调用，支持递进式两轮确认"""
+    """获取温度和负载率参数，集成API调用，支持授权确认"""
     try:
         # 初始化状态
         state = initialize_temp_load_rate_state(conn)
@@ -297,7 +300,7 @@ def get_temperature_load_rate(
             preset_temp = preset["temperature"]
             preset_load = preset["load_rate"]
             
-            logger.bind(tag=TAG).info(f"【使用预设参数】推荐参数：温度={preset_temp}℃, 负载率={preset_load}kw")
+            logger.bind(tag=TAG).info(f"【使用预设参数】推荐参数：温度={preset_temp}℃, 负载率={preset_load}%")
             
             # 如果用户没有提供温度，使用预设温度
             if state["temperature"] is None:
@@ -310,7 +313,7 @@ def get_temperature_load_rate(
             # 如果用户没有提供负载率，使用预设负载率
             if state["load_rate"] is None:
                 state["load_rate_raw"] = preset_load
-                state["load_rate"] = f"{preset_load}kw"
+                state["load_rate"] = f"{preset_load}%"
                 logger.bind(tag=TAG).info(f"【使用预设参数】✅ 负载率已设置为预设值: {state['load_rate']}")
             else:
                 logger.bind(tag=TAG).info(f"【使用预设参数】负载率已由用户提供: {state['load_rate']}")
@@ -320,19 +323,14 @@ def get_temperature_load_rate(
             
             logger.bind(tag=TAG).info("【使用预设参数】参数设置完成，请求用户确认")
             
-            # 请求用户确认
+            # 请求用户确认（优化：使用专业话术）
             confirm_message = (
-                f"根据以下信息回复用户：\n"
-                f"已为您设置推荐参数：\n"
-                f"温度: {state['temperature']}\n"
-                f"负载率: {state['load_rate']}\n"
-                f"(请用自然语言告知用户已使用推荐参数，并询问用户是否确认这些参数)\n"
+                f"告知用户：新工况已设置，温度：{state['temperature']}，负载：{state['load_rate']}\n"
+                f"然后简洁询问：是否启动AI寻优计算？（15字以内）\n"
                 f"\n"
-                f"【重要提醒】当前正在执行【温度/负载率设置】流程，已进行到 waiting_first_confirm 阶段。\n"
-                f"若用户回复【确认/是的/好/可以/对的/没错/OK】等肯定词，请必须立即调用：\n"
-                f"get_temperature_load_rate(confirm=True)\n"
-                f"若用户回复【取消/算了/不要/不用了】等否定词，请必须立即调用：\n"
-                f"get_temperature_load_rate(cancel=True)"
+                f"【流程状态】waiting_first_confirm（需要用户授权）\n"
+                f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
+                f"用户说【取消/拒绝/不要】→ 立即调用 get_temperature_load_rate(cancel=True)"
             )
             
             return ActionResponse(
@@ -367,18 +365,18 @@ def get_temperature_load_rate(
             logger.bind(tag=TAG).info(f"【参数收集】收到负载率输入: {load_rate}")
             load_rate_value, load_rate_formatted = parse_load_rate(load_rate)
             if load_rate_value is not None:
-                # 注意：负载率实际是kw值，不做百分比验证，改为合理范围验证
-                # 这里假设负载率在0-200kw之间
-                if load_rate_value < 0 or load_rate_value > 200:
-                    logger.bind(tag=TAG).warning(f"【参数收集】负载率验证失败: 超出范围")
+                # 验证负载率是否在合理范围内（0%-100%）
+                is_valid, error_msg = validate_load_rate(load_rate_value)
+                if not is_valid:
+                    logger.bind(tag=TAG).warning(f"【参数收集】负载率验证失败: {error_msg}")
                     return ActionResponse(
                         action=Action.REQLLM,
-                        result=f"负载率{load_rate_value}kw超出合理范围（0~200kw），请重新输入",
+                        result=error_msg,
                         response=None,
                     )
                 state["load_rate_raw"] = load_rate_value
-                state["load_rate"] = f"{load_rate_value}kw"
-                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已更新: {load_rate_value}kw")
+                state["load_rate"] = load_rate_formatted
+                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已更新: {load_rate_formatted} (原始值: {load_rate_value})")
             else:
                 logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析负载率: {load_rate}")
         
@@ -386,10 +384,10 @@ def get_temperature_load_rate(
         has_temperature = state["temperature"] is not None
         has_load_rate = state["load_rate"] is not None
         
-        # ==================== 阶段：第二次确认（AI推荐模式确认） ====================
+        # ==================== 阶段：第二次确认（AI节能优化确认） ====================
         if state["stage"] == "waiting_second_confirm" and confirm:
             logger.bind(tag=TAG).info("=" * 80)
-            logger.bind(tag=TAG).info("【第二次确认】用户确认使用AI推荐模式")
+            logger.bind(tag=TAG).info("【第二次确认】用户确认使用AI节能优化")
             logger.bind(tag=TAG).info("=" * 80)
             logger.bind(tag=TAG).info("【第二次确认】准备调用确认API（第二次）...")
             
@@ -400,17 +398,14 @@ def get_temperature_load_rate(
                 
                 if data.get("status") == "success" and data.get("stage") == 2:
                     # 第二次确认成功，完成流程
-                    description = data.get("message", {}).get("descripetion", "已确认使用AI推荐模式，开始AI节能优化")
-                    logger.bind(tag=TAG).info(f"【第二次确认】✅ 成功！{description}")
+                    logger.bind(tag=TAG).info(f"【第二次确认】✅ 成功！AI寻优计算启动")
                     
                     state["confirm_stage"] = 2
                     state["stage"] = "completed"
                     
+                    # 使用产品建议的专业话术
                     result_message = (
-                        f"✅ {description}\n"
-                        f"温度: {state['temperature']}\n"
-                        f"负载率: {state['load_rate']}\n"
-                        f"系统已启动AI节能优化流程"
+                        f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
                     )
                     
                     logger.bind(tag=TAG).info("【第二次确认】流程完成，清除状态")
@@ -420,7 +415,7 @@ def get_temperature_load_rate(
                     logger.bind(tag=TAG).info("【第二次确认】返回完成消息")
                     return ActionResponse(
                         action=Action.RESPONSE,
-                        result="AI节能优化已启动",
+                        result="AI寻优计算完毕，节能方案已执行",
                         response=result_message,
                     )
                 else:
@@ -446,11 +441,11 @@ def get_temperature_load_rate(
         if (has_temperature or has_load_rate) and state["stage"] in ["init", "collecting"]:
             logger.bind(tag=TAG).info("=" * 80)
             if has_temperature and has_load_rate:
-                logger.bind(tag=TAG).info(f"【参数收集完成】温度={state['temperature_raw']}℃, 负载率={state['load_rate_raw']}kw")
+                logger.bind(tag=TAG).info(f"【参数收集完成】温度={state['temperature_raw']}℃, 负载率={state['load_rate_raw']}%")
             elif has_temperature:
                 logger.bind(tag=TAG).info(f"【参数收集完成】温度={state['temperature_raw']}℃ (负载率未提供)")
             else:
-                logger.bind(tag=TAG).info(f"【参数收集完成】负载率={state['load_rate_raw']}kw (温度未提供)")
+                logger.bind(tag=TAG).info(f"【参数收集完成】负载率={state['load_rate_raw']}% (温度未提供)")
             logger.bind(tag=TAG).info("=" * 80)
             
             # 检查是否使用预设参数（避免超时）
@@ -483,24 +478,24 @@ def get_temperature_load_rate(
             
             params_str = "\n".join(params_info)
             
-            # 请求用户第一次确认
+            # 请求用户第一次确认（优化：使用专业话术）
+            temp_str = state['temperature'] if has_temperature else "未设置"
+            load_str = state['load_rate'] if has_load_rate else "未设置"
+            
             confirm_message = (
-                f"根据以下信息回复用户：\n"
-                f"{params_str}\n"
-                f"(请用自然语言向用户确认这些参数是否正确，并提示用户可以说'确认'完成设置)\n"
+                f"告知用户：新工况已设置，温度：{temp_str}，负载：{load_str}\n"
+                f"然后简洁询问：是否启动AI寻优计算？（15字以内）\n"
                 f"\n"
-                f"【重要提醒】当前正在执行【温度/负载率设置】流程，已进行到 waiting_first_confirm 阶段。\n"
-                f"若用户回复【确认/是的/好/可以/对的/没错/OK】等肯定词，请必须立即调用：\n"
-                f"get_temperature_load_rate(confirm=True)\n"
-                f"若用户回复【取消/算了/不要/不用了】等否定词，请必须立即调用：\n"
-                f"get_temperature_load_rate(cancel=True)"
+                f"【流程状态】waiting_first_confirm（需要用户授权）\n"
+                f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
+                f"用户说【取消/拒绝/不要】→ 立即调用 get_temperature_load_rate(cancel=True)"
             )
             
-            return ActionResponse(
-                action=Action.REQLLM,
-                result=confirm_message,
-                response=None,
-            )
+            # return ActionResponse(
+            #     action=Action.REQLLM,
+            #     result=confirm_message,
+            #     response=None,
+            # )
         
         # ==================== 阶段：第一次确认（参数确认 + 调用API） ====================
         if state["stage"] == "waiting_first_confirm" and confirm:
@@ -512,12 +507,13 @@ def get_temperature_load_rate(
             load_raw = state.get('load_rate_raw')
             
             # 步骤1: 调用API1（ASR接口），支持单参数或双参数
+            print('开始调用API1（ASR接口）调用')
             if temp_raw is not None and load_raw is not None:
-                logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 温度={temp_raw}℃, 负载率={load_raw}kw")
+                logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 温度={temp_raw}℃, 负载率={load_raw}%")
             elif temp_raw is not None:
                 logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 温度={temp_raw}℃ (仅温度)")
             else:
-                logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 负载率={load_raw}kw (仅负载率)")
+                logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 负载率={load_raw}% (仅负载率)")
             
             success1, data1, error1 = call_asr_api(api_base_url, temperature=temp_raw, load_rate=load_raw)
             
@@ -569,18 +565,14 @@ def get_temperature_load_rate(
                 state["stage"] = "waiting_second_confirm"
                 
                 logger.bind(tag=TAG).info("【第一次确认】两个API都调用成功，状态已更新为 waiting_second_confirm")
-                logger.bind(tag=TAG).info("【第一次确认】请求用户第二次确认（AI推荐模式）")
+                logger.bind(tag=TAG).info("【第一次确认】请求用户第二次确认（AI节能优化）")
                 
                 prompt_message = (
-                    f"根据以下信息回复用户：\n"
-                    f"第一次确认成功: {description2}\n"
-                    f"(请友好地询问用户是否使用AI推荐模式进行节能优化，并提示用户可以说'确认'或'好的'来同意)\n"
+                    f"简洁询问：是否启动AI寻优计算？（10字以内）\n"
                     f"\n"
-                    f"【重要提醒】当前正在执行【温度/负载率设置】流程，已进行到 waiting_second_confirm 阶段（第二次确认）。\n"
-                    f"若用户回复【确认/是的/好/可以/对的/没错/OK】等肯定词，请必须立即调用：\n"
-                    f"get_temperature_load_rate(confirm=True)\n"
-                    f"若用户回复【取消/算了/不要/不用了】等否定词，请必须立即调用：\n"
-                    f"get_temperature_load_rate(cancel=True)"
+                    f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
+                    f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
+                    f"用户说【取消/拒绝/不要】→ 立即调用 get_temperature_load_rate(cancel=True)"
                 )
                 
                 return ActionResponse(
@@ -598,66 +590,26 @@ def get_temperature_load_rate(
                     response=None,
                 )
 
-        # ==================== 阶段：参数收集中（单参数情况） ====================
-        # 注意：现在API支持单参数，所以有一个参数就已经可以进入确认阶段了
-        # 这里只是给用户提供继续添加参数的机会，但不强制要求
-        
-        # 情况：只有温度，询问是否需要设置负载率
-        if has_temperature and not has_load_rate:
-            logger.bind(tag=TAG).info(f"【参数收集中】只有温度({state['temperature']})，询问用户是否需要设置负载率")
-            state["stage"] = "collecting"
-            prompt_message = (
-                f"根据以下信息回复用户：\n"
-                f"温度已设置为: {state['temperature']}\n"
-                f"(请用自然、友好的方式告诉用户温度已记录。"
-                f"询问用户：是否还需要设置负载率？也可以直接确认当前参数。"
-                f"提示：如果不确定负载率设什么值，可以说'使用推荐值'或'帮我设置'；如果只设置温度，可以直接说'确认')\n"
-                f"\n"
-                f"【提醒】当前正在执行【温度/负载率设置】流程，collecting 阶段（收集参数中）。\n"
-                f"若用户说【使用推荐值/帮我设置/随便/默认值】等，请调用：get_temperature_load_rate(use_preset=True)\n"
-                f"若用户说【确认/好的】等表示只设置温度，系统会自动进入确认流程\n"
-                f"若用户说【取消/不要了】等，请调用：get_temperature_load_rate(cancel=True)"
-            )
-            return ActionResponse(
-                action=Action.REQLLM,
-                result=prompt_message,
-                response=None,
-            )
-        
-        # 情况：只有负载率，询问是否需要设置温度
-        if has_load_rate and not has_temperature:
-            logger.bind(tag=TAG).info(f"【参数收集中】只有负载率({state['load_rate']})，询问用户是否需要设置温度")
-            state["stage"] = "collecting"
-            prompt_message = (
-                f"根据以下信息回复用户：\n"
-                f"负载率已设置为: {state['load_rate']}\n"
-                f"(请用自然、友好的方式告诉用户负载率已记录。"
-                f"询问用户：是否还需要设置温度？也可以直接确认当前参数。"
-                f"提示：如果不确定温度设什么值，可以说'使用推荐值'或'帮我设置'；如果只设置负载率，可以直接说'确认')\n"
-                f"\n"
-                f"【提醒】当前正在执行【温度/负载率设置】流程，collecting 阶段（收集参数中）。\n"
-                f"若用户说【使用推荐值/帮我设置/随便/默认值】等，请调用：get_temperature_load_rate(use_preset=True)\n"
-                f"若用户说【确认/好的】等表示只设置负载率，系统会自动进入确认流程\n"
-                f"若用户说【取消/不要了】等，请调用：get_temperature_load_rate(cancel=True)"
-            )
-            return ActionResponse(
-                action=Action.REQLLM,
-                result=prompt_message,
-                response=None,
-            )
+        # ==================== 已移除：参数收集中的反问环节 ====================
+        # 优化说明：为了减少交互轮次，即使用户只提供单个参数，也直接进入确认阶段
+        # 而不是询问"是否需要设置另一个参数"，这样可以确保用户只需2次确认即可完成流程
+        # 
+        # 原逻辑：用户只提供温度 → 询问是否需要负载率 → 用户确认参数 → 用户确认AI模式
+        # 新逻辑：用户提供参数 → 直接确认参数 → 用户确认AI模式
+        # 
+        # API支持单参数或双参数，所以这个优化是可行的
         
         # 情况：两个参数都没有
         logger.bind(tag=TAG).info("【参数收集中】两个参数都没有，询问用户提供参数或使用预设值")
         state["stage"] = "collecting"
         initial_message = (
-            "根据以下情况回复用户：\n"
-            "用户想要设置温度和负载率参数，但还未提供具体数值\n"
-            "(请用自然、友好的方式询问用户想要设置的温度（摄氏度）和负载率（千瓦kw），可以一起提供或分别提供。"
-            "同时提示用户：如果不确定设什么值，可以说'使用推荐值'或'帮我设置'，系统将使用预设的推荐参数)\n"
+            "询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
+            "提示：不确定可说'用推荐值'。保持15字以内。\n"
             "\n"
-            "【提醒】当前正在执行【温度/负载率设置】流程，collecting 阶段（收集参数中）。\n"
-            "若用户说【使用推荐值/帮我设置/随便/默认值】等，请调用：get_temperature_load_rate(use_preset=True)\n"
-            "若用户说【取消/不要了】等，请调用：get_temperature_load_rate(cancel=True)"
+            "【流程状态】collecting（参数收集阶段）\n"
+            "⚠️ 重要：用户一旦提供参数，必须立即调用 get_temperature_load_rate 并传入参数！\n"
+            "用户说【推荐值/帮我设置/默认】→ 调用 get_temperature_load_rate(use_preset=True)\n"
+            "用户说【取消】→ 调用 get_temperature_load_rate(cancel=True)"
         )
         return ActionResponse(
             action=Action.REQLLM,
