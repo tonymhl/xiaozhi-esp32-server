@@ -1,8 +1,5 @@
-# torch和torchaudio在Dockerfile中单独安装CPU版本
-# torch==2.2.2
-# torchaudio==2.2.2
-silero_vad==6.0.0
 pyyml==0.0.2
+silero_vad==6.0.0
 websockets==14.2
 opuslib_next==1.1.2
 numpy==1.26.4

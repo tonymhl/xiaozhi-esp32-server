@@ -71,6 +71,8 @@ services:
     volumes:
       # 上传文件目录
       - ./uploadfile:/uploadfile
+      - ./docker-config/start.sh:/start.sh:ro
+      - ./docker-config/nginx.conf:/etc/nginx/nginx.conf:ro
     deploy:
       resources:
         limits:
