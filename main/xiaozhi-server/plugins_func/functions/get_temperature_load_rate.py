@@ -403,10 +403,24 @@ def get_temperature_load_rate(
                     state["confirm_stage"] = 2
                     state["stage"] = "completed"
                     
-                    # 使用产品建议的专业话术
-                    result_message = (
-                        f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
-                    )
+                    # 使用暖通建议的专业话术，根据实际参数动态构建消息
+                    params_parts = []
+                    if state.get("temperature"):
+                        params_parts.append(f"温度：{state['temperature']}")
+                    if state.get("load_rate"):
+                        params_parts.append(f"负载：{state['load_rate']}")
+                    
+                    if params_parts:
+                        params_info = "，".join(params_parts)
+                        result_message = (
+                            f"新工况已设置，{params_info}。\n"
+                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
+                        )
+                    else:
+                        # 理论上不应该出现这种情况，但作为兜底
+                        result_message = (
+                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
+                        )
                     
                     logger.bind(tag=TAG).info("【第二次确认】流程完成，清除状态")
                     # 清除状态
@@ -507,7 +521,6 @@ def get_temperature_load_rate(
             load_raw = state.get('load_rate_raw')
             
             # 步骤1: 调用API1（ASR接口），支持单参数或双参数
-            print('开始调用API1（ASR接口）调用')
             if temp_raw is not None and load_raw is not None:
                 logger.bind(tag=TAG).info(f"【第一次确认-步骤1】准备调用ASR API: 温度={temp_raw}℃, 负载率={load_raw}%")
             elif temp_raw is not None:
@@ -568,7 +581,7 @@ def get_temperature_load_rate(
                 logger.bind(tag=TAG).info("【第一次确认】请求用户第二次确认（AI节能优化）")
                 
                 prompt_message = (
-                    f"简洁询问：是否启动AI寻优计算？（10字以内）\n"
+                    f"简洁询问：是否启动AI寻优计算？（15字以内）\n"
                     f"\n"
                     f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
                     f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
