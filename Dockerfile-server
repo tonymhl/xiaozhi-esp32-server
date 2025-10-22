@@ -1,5 +1,5 @@
-# 第一阶段：构建Python依赖
-FROM python:3.10-slim AS builder
+# 生产镜像，仅包含应用代码
+FROM ghcr.io/xinnan-tech/xiaozhi-esp32-server:server-base
 
 WORKDIR /app
 
