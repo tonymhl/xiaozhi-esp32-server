@@ -241,9 +241,9 @@ public class AgentVoicePrintServiceImpl extends ServiceImpl<AgentVoicePrintDao, 
         String host = uri.getHost();
         int port = uri.getPort();
         if (port == -1) {
-            return "%s://%s".formatted(protocol, host);
+            return String.format("%s://%s", protocol, host);
         } else {
-            return "%s://%s:%s".formatted(protocol, host, port);
+            return String.format("%s://%s:%s", protocol, host, port);
         }
     }
 

@@ -1,6 +1,5 @@
 package xiaozhi.modules.model.dto;
 
-import java.io.Serial;
 import java.io.Serializable;
 
 import cn.hutool.json.JSONObject;
@@ -11,7 +10,6 @@ import lombok.Data;
 @Schema(description = "模型供应器/商")
 public class ModelConfigDTO implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键")

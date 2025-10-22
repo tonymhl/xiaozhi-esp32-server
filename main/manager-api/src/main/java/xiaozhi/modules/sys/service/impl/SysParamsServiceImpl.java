@@ -263,10 +263,10 @@ public class SysParamsServiceImpl extends BaseServiceImpl<SysParamsDao, SysParam
                 str.append(",").append(item);
             }
         });
-        if (!str.isEmpty()) {
+        if (str.length() > 0) {
             String promptStr = "%s这些参数不可以为空";
             String substring = str.substring(1, str.length());
-            throw new RenException(promptStr.formatted(substring));
+            throw new RenException(String.format(promptStr, substring));
         }
         return true;
     }

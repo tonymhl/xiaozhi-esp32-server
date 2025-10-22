@@ -46,7 +46,7 @@ public class AgentMcpAccessPointServiceImpl implements AgentMcpAccessPointServic
         // 对token进行URL编码
         String encodedToken = URLEncoder.encode(encryptToken, StandardCharsets.UTF_8);
         // 返回智能体Mcp路径的格式
-        agentMcpUrl = "%s/mcp/?token=%s".formatted(agentMcpUrl, encodedToken);
+        agentMcpUrl = String.format("%s/mcp/?token=%s", agentMcpUrl, encodedToken);
         return agentMcpUrl;
     }
 
@@ -227,7 +227,7 @@ public class AgentMcpAccessPointServiceImpl implements AgentMcpAccessPointServic
         // 使用md5对智能体id进行加密
         String md5 = HashEncryptionUtil.Md5hexDigest(agentId);
         // aes需要加密文本
-        String json = "{\"agentId\": \"%s\"}".formatted(md5);
+        String json = String.format("{\"agentId\": \"%s\"}", md5);
         // 加密后成token值
         return AESUtils.encrypt(key, json);
     }
