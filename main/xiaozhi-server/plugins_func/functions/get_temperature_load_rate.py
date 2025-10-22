@@ -107,8 +107,8 @@ def validate_temperature(temp_value):
     """验证温度是否在合理范围内"""
     if temp_value is None:
         return True, None
-    if temp_value < -10 or temp_value > 50:
-        return False, f"温度{temp_value}℃超出合理范围（-10℃~50℃），请重新输入"
+    if temp_value < -15 or temp_value > 45:
+        return False, f"温度{temp_value}℃超出合理范围（-15℃~45℃），请重新输入"
     return True, None
 
 
@@ -165,13 +165,14 @@ def call_asr_api(base_url, temperature=None, load_rate=None):
         if data.get("status") == "success":
             return True, data, None
         elif data.get("status") == "fail":
-            error_msg = data.get("error", "未知错误")
+            error_msg = data.get("message", "未知错误")
             code = data.get("code", 0)
             if code == 409:
                 return False, data, "优化任务正在进行中，请稍后再试"
             return False, data, error_msg
         else:
-            return False, data, "接口返回状态异常"
+            error_msg = data.get("message", "未知错误")
+            return False, data, error_msg
             
     except requests.Timeout:
         logger.bind(tag=TAG).error(f"ASR API调用超时")
@@ -207,6 +208,7 @@ def call_confirm_api(base_url, status):
         
         if data.get("status") == "success":
             stage = data.get("stage", 0)
+            message = data.get("message", {})
             return True, data, None
         elif data.get("status") == "canceled":
             return True, data, None  # 取消也算成功
@@ -214,7 +216,8 @@ def call_confirm_api(base_url, status):
             error_msg = data.get("message", "未知错误")
             return False, data, error_msg
         else:
-            return False, data, "接口返回状态异常"
+            error_msg = data.get("message", "未知错误")
+            return False, data, error_msg
             
     except requests.Timeout:
         logger.bind(tag=TAG).error(f"确认API调用超时")
@@ -289,6 +292,117 @@ def get_temperature_load_rate(
                 response="好的，已取消温度负载率设置",
             )
         
+        # ==================== 阶段：参数收集 ====================
+        # 更新温度
+        if temperature is not None:
+            logger.bind(tag=TAG).info(f"【参数收集】收到温度输入: {temperature}")
+            temp_value, temp_formatted = parse_temperature(temperature)
+            if temp_value is not None:
+                # 验证温度
+                is_valid, error_msg = validate_temperature(temp_value)
+                if not is_valid:
+                    logger.bind(tag=TAG).warning(f"【参数收集】温度验证失败: {error_msg}")
+                    return ActionResponse(
+                        action=Action.RESPONSE,
+                        result=None,
+                        response=error_msg,
+                    )
+                state["temperature_raw"] = temp_value
+                state["temperature"] = temp_formatted
+                logger.bind(tag=TAG).info(f"【参数收集】✅ 温度已更新: {temp_formatted} (原始值: {temp_value})")
+            else:
+                logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析温度: {temperature}")
+        
+        # 更新负载率
+        if load_rate is not None:
+            logger.bind(tag=TAG).info(f"【参数收集】收到负载率输入: {load_rate}")
+            load_rate_value, load_rate_formatted = parse_load_rate(load_rate)
+            if load_rate_value is not None:
+                # 验证负载率是否在合理范围内（0%-100%）
+                is_valid, error_msg = validate_load_rate(load_rate_value)
+                if not is_valid:
+                    logger.bind(tag=TAG).warning(f"【参数收集】负载率验证失败: {error_msg}")
+                    return ActionResponse(
+                        action=Action.RESPONSE,
+                        result=None,
+                        response=error_msg,
+                    )
+                state["load_rate_raw"] = load_rate_value
+                state["load_rate"] = load_rate_formatted
+                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已更新: {load_rate_formatted} (原始值: {load_rate_value})")
+            else:
+                logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析负载率: {load_rate}")
+        
+        # 检查当前状态
+        has_temperature = state["temperature"] is not None
+        has_load_rate = state["load_rate"] is not None
+        
+        # ==================== 阶段：第二次确认（AI节能优化确认） ====================
+        if state["stage"] == "waiting_second_confirm" and confirm:
+            logger.bind(tag=TAG).info("=" * 80)
+            logger.bind(tag=TAG).info("【第二次确认】用户确认使用AI节能优化")
+            logger.bind(tag=TAG).info("=" * 80)
+            logger.bind(tag=TAG).info("【第二次确认】准备调用确认API（第二次）...")
+            
+            success, data, error = call_confirm_api(api_base_url, 1)
+            
+            if success:
+                logger.bind(tag=TAG).info(f"【第二次确认】API调用成功，响应数据: {data}")
+                
+                if data.get("status") == "success" and data.get("stage") == 2:
+                    # 第二次确认成功，完成流程
+                    logger.bind(tag=TAG).info(f"【第二次确认】✅ 成功！AI寻优计算启动")
+                    
+                    state["confirm_stage"] = 2
+                    state["stage"] = "completed"
+                    
+                    # 使用暖通建议的专业话术，根据实际参数动态构建消息
+                    params_parts = []
+                    if state.get("temperature"):
+                        params_parts.append(f"温度：{state['temperature']}")
+                    if state.get("load_rate"):
+                        params_parts.append(f"负载：{state['load_rate']}")
+                    
+                    if params_parts:
+                        params_info = "，".join(params_parts)
+                        result_message = (
+                            f"新工况已设置，{params_info}。\n"
+                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数正在执行。"
+                        )
+                    else:
+                        # 理论上不应该出现这种情况，但作为兜底
+                        result_message = (
+                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数正在执行。"
+                        )
+                    
+                    logger.bind(tag=TAG).info("【第二次确认】流程完成，清除状态")
+                    # 清除状态
+                    clear_temp_load_rate_state(conn)
+                    
+                    logger.bind(tag=TAG).info("【第二次确认】返回完成消息")
+                    return ActionResponse(
+                        action=Action.RESPONSE,
+                        result="AI寻优计算完毕，节能方案正在执行",
+                        response=result_message,
+                    )
+                else:
+                    # API返回异常
+                    error_msg = f"确认失败: {error}"
+                    logger.bind(tag=TAG).error(f"【第二次确认】❌ API返回异常: {error_msg}")
+                    return ActionResponse(
+                        action=Action.RESPONSE,
+                        result=error_msg,
+                        response=error_msg,
+                    )
+            else:
+                # API调用失败
+                logger.bind(tag=TAG).error(f"【第二次确认】❌ API调用失败: {error}")
+                return ActionResponse(
+                    action=Action.RESPONSE,
+                    result=f"确认操作失败: {error}，请稍后重试",
+                    response=f"确认操作失败: {error}，请稍后重试",
+                )
+        
         # ==================== 处理使用预设参数 ====================
         if use_preset:
             logger.bind(tag=TAG).info("=" * 80)
@@ -338,117 +452,6 @@ def get_temperature_load_rate(
                 result=confirm_message,
                 response=None,
             )
-        
-        # ==================== 阶段：参数收集 ====================
-        # 更新温度
-        if temperature is not None:
-            logger.bind(tag=TAG).info(f"【参数收集】收到温度输入: {temperature}")
-            temp_value, temp_formatted = parse_temperature(temperature)
-            if temp_value is not None:
-                # 验证温度
-                is_valid, error_msg = validate_temperature(temp_value)
-                if not is_valid:
-                    logger.bind(tag=TAG).warning(f"【参数收集】温度验证失败: {error_msg}")
-                    return ActionResponse(
-                        action=Action.REQLLM,
-                        result=error_msg,
-                        response=None,
-                    )
-                state["temperature_raw"] = temp_value
-                state["temperature"] = temp_formatted
-                logger.bind(tag=TAG).info(f"【参数收集】✅ 温度已更新: {temp_formatted} (原始值: {temp_value})")
-            else:
-                logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析温度: {temperature}")
-        
-        # 更新负载率
-        if load_rate is not None:
-            logger.bind(tag=TAG).info(f"【参数收集】收到负载率输入: {load_rate}")
-            load_rate_value, load_rate_formatted = parse_load_rate(load_rate)
-            if load_rate_value is not None:
-                # 验证负载率是否在合理范围内（0%-100%）
-                is_valid, error_msg = validate_load_rate(load_rate_value)
-                if not is_valid:
-                    logger.bind(tag=TAG).warning(f"【参数收集】负载率验证失败: {error_msg}")
-                    return ActionResponse(
-                        action=Action.REQLLM,
-                        result=error_msg,
-                        response=None,
-                    )
-                state["load_rate_raw"] = load_rate_value
-                state["load_rate"] = load_rate_formatted
-                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已更新: {load_rate_formatted} (原始值: {load_rate_value})")
-            else:
-                logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析负载率: {load_rate}")
-        
-        # 检查当前状态
-        has_temperature = state["temperature"] is not None
-        has_load_rate = state["load_rate"] is not None
-        
-        # ==================== 阶段：第二次确认（AI节能优化确认） ====================
-        if state["stage"] == "waiting_second_confirm" and confirm:
-            logger.bind(tag=TAG).info("=" * 80)
-            logger.bind(tag=TAG).info("【第二次确认】用户确认使用AI节能优化")
-            logger.bind(tag=TAG).info("=" * 80)
-            logger.bind(tag=TAG).info("【第二次确认】准备调用确认API（第二次）...")
-            
-            success, data, error = call_confirm_api(api_base_url, 1)
-            
-            if success:
-                logger.bind(tag=TAG).info(f"【第二次确认】API调用成功，响应数据: {data}")
-                
-                if data.get("status") == "success" and data.get("stage") == 2:
-                    # 第二次确认成功，完成流程
-                    logger.bind(tag=TAG).info(f"【第二次确认】✅ 成功！AI寻优计算启动")
-                    
-                    state["confirm_stage"] = 2
-                    state["stage"] = "completed"
-                    
-                    # 使用暖通建议的专业话术，根据实际参数动态构建消息
-                    params_parts = []
-                    if state.get("temperature"):
-                        params_parts.append(f"温度：{state['temperature']}")
-                    if state.get("load_rate"):
-                        params_parts.append(f"负载：{state['load_rate']}")
-                    
-                    if params_parts:
-                        params_info = "，".join(params_parts)
-                        result_message = (
-                            f"新工况已设置，{params_info}。\n"
-                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
-                        )
-                    else:
-                        # 理论上不应该出现这种情况，但作为兜底
-                        result_message = (
-                            f"AI寻优计算完毕，已锁定当前工况最优节能方案，新控制参数已下发执行。"
-                        )
-                    
-                    logger.bind(tag=TAG).info("【第二次确认】流程完成，清除状态")
-                    # 清除状态
-                    clear_temp_load_rate_state(conn)
-                    
-                    logger.bind(tag=TAG).info("【第二次确认】返回完成消息")
-                    return ActionResponse(
-                        action=Action.RESPONSE,
-                        result="AI寻优计算完毕，节能方案已执行",
-                        response=result_message,
-                    )
-                else:
-                    # API返回异常
-                    error_msg = f"确认失败: {data}"
-                    logger.bind(tag=TAG).error(f"【第二次确认】❌ API返回异常: {error_msg}")
-                    return ActionResponse(
-                        action=Action.REQLLM,
-                        result=error_msg,
-                        response=None,
-                    )
-            else:
-                # API调用失败
-                logger.bind(tag=TAG).error(f"【第二次确认】❌ API调用失败: {error}")
-                return ActionResponse(
-                    action=Action.REQLLM,
-                    result=f"确认操作失败: {error}，请稍后重试",
-                    response=None,
-                )
         
         # ==================== 阶段：参数收集完成，请求第一次确认 ====================
         # 只要有至少一个参数就可以进入确认阶段（接口支持单参数）
@@ -534,9 +537,9 @@ def get_temperature_load_rate(
                 # API1调用失败
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤1】❌ ASR API调用失败: {error1}")
                 return ActionResponse(
-                    action=Action.REQLLM,
-                    result=f"参数设置失败: {error1}",
-                    response=None,
+                    action=Action.RESPONSE,
+                    result=None,
+                    response=f"参数设置失败: {error1}",
                 )
             
             # API1调用成功
@@ -560,9 +563,9 @@ def get_temperature_load_rate(
                 # API2调用失败
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ 确认API调用失败: {error2}")
                 return ActionResponse(
-                    action=Action.REQLLM,
+                    action=Action.RESPONSE,
                     result=f"确认操作失败: {error2}，请稍后重试",
-                    response=None,
+                    response=f"确认操作失败: {error2}，请稍后重试",
                 )
             
             # API2调用成功
@@ -581,7 +584,7 @@ def get_temperature_load_rate(
                 logger.bind(tag=TAG).info("【第一次确认】请求用户第二次确认（AI节能优化）")
                 
                 prompt_message = (
-                    f"简洁询问：是否启动AI寻优计算？（15字以内）\n"
+                    f"询问：是否启动AI寻优计算？（15字以内）\n"
                     f"\n"
                     f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
                     f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
@@ -595,12 +598,12 @@ def get_temperature_load_rate(
                 )
             else:
                 # API2返回异常
-                error_msg = f"确认失败: {data2}"
+                error_msg = f"确认失败: {error2}"
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ API返回异常: {error_msg}")
                 return ActionResponse(
-                    action=Action.REQLLM,
+                    action=Action.RESPONSE,
                     result=error_msg,
-                    response=None,
+                    response=error2,
                 )
 
         # ==================== 已移除：参数收集中的反问环节 ====================
