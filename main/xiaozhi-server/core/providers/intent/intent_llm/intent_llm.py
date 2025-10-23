@@ -56,6 +56,15 @@ class IntentProvider(IntentProviderBase):
             "【严格格式要求】你必须只能返回JSON格式，绝对不能返回任何自然语言！\n\n"
             "你是一个意图识别助手。请分析用户的最后一句话，判断用户意图并调用相应的函数。\n\n"
 
+            "【⚠️ 最高优先级规则】温度负载率设置/确认工具调用：\n"
+            "- 如果用户提及【温度】、【负载率】、【负载】、【节能】、【优化】、【工况】等关键词\n"
+            "- 或者用户说【确认】、【好的】、【可以】、【是的】、【启动】、【执行】、【授权】、【同意】、【OK】、【ok】、【没错】、【没问题】、【没毛病】、等肯定词\n"
+            "- 必须优先调用 get_temperature_load_rate 函数！\n"
+            "- 示例：用户说'确认' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"confirm\": true}}}\n"
+            "- 示例：用户说'温度22度' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\"}}}\n\n"
+            "- 示例：用户说'负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"load_rate\": \"90\"}}}\n"
+            "- 示例：用户说'温度22度，负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\", \"load_rate\": \"90\"}}}\n"
+
             "【重要规则】以下类型的查询请直接返回result_for_context，无需调用函数：\n"
             "- 询问当前时间（如：现在几点、当前时间、查询时间等）\n"
             "- 询问今天日期（如：今天几号、今天星期几、今天是什么日期等）\n"
@@ -82,6 +91,14 @@ class IntentProvider(IntentProviderBase):
             '返回: {"function_call": {"name": "result_for_context"}}\n'
             "```\n"
             "```\n"
+            "用户: 设置温度22度，负载率90%\n"
+            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"temperature": "22", "load_rate": "90"}}}\n'
+            "```\n"
+            "```\n"
+            "用户: 可以\n"
+            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"confirm": true}}}\n'
+            "```\n"
+            "```\n"
             "用户: 当前电池电量是多少？\n"
             '返回: {"function_call": {"name": "get_battery_level", "arguments": {"response_success": "当前电池电量为{value}%", "response_failure": "无法获取Battery的当前电量百分比"}}}\n'
             "```\n"
@@ -103,10 +120,11 @@ class IntentProvider(IntentProviderBase):
             "```\n\n"
             "注意：\n"
             "1. 只返回JSON格式，不要包含任何其他文字\n"
-            '2. 优先检查用户查询是否为基础信息（时间、日期等），如是则返回{"function_call": {"name": "result_for_context"}}，不需要arguments参数\n'
-            '3. 如果没有找到匹配的函数，返回{"function_call": {"name": "continue_chat"}}\n'
-            "4. 确保返回的JSON格式正确，包含所有必要的字段\n"
-            "5. result_for_context不需要任何参数，系统会自动从上下文获取信息\n"
+            "2. ⚠️ 最高优先级：温度/负载率/节能/确认等关键词 → 必须调用 get_temperature_load_rate\n"
+            '3. 优先检查用户查询是否为基础信息（时间、日期等），如是则返回{"function_call": {"name": "result_for_context"}}，不需要arguments参数\n'
+            '4. 如果没有找到匹配的函数，返回{"function_call": {"name": "continue_chat"}}\n'
+            "5. 确保返回的JSON格式正确，包含所有必要的字段，布尔值使用小写 true/false\n"
+            "6. result_for_context不需要任何参数，系统会自动从上下文获取信息\n"
             "特殊说明：\n"
             "- 当用户单次输入包含多个指令时（如'打开灯并且调高音量'）\n"
             "- 请返回多个function_call组成的JSON数组\n"
@@ -128,6 +146,78 @@ class IntentProvider(IntentProviderBase):
             raise ValueError("LLM provider not set")
         if conn.func_handler is None:
             return '{"function_call": {"name": "continue_chat"}}'
+
+        # ==================== 🎯 温度负载率工具强制识别（演示模式） ====================
+        # 检测温度负载率相关关键词，强制触发工具调用
+        temp_load_keywords = [
+            "温度", "负载率", "负载", "节能", "优化", "工况", 
+            "确认", "好的", "可以", "是的", "启动", "执行", "授权", "同意", "OK", "ok", "没错", "没问题", "没毛病", "行", 
+            "取消", "不要", "算了", "拒绝",
+            "推荐", "预设", "默认", "帮我设置"
+        ]
+        
+        # 检查是否包含关键词
+        text_lower = text.lower()
+        contains_keyword = any(keyword in text for keyword in temp_load_keywords)
+        
+        if contains_keyword:
+            logger.bind(tag=TAG).info(f"【强制识别】检测到温度/负载率/确认/取消/等关键词，进行意图判断: {text}")
+            
+            # 🔍 关键优化：检查是否为"混合意图"
+            # 混合意图包括：
+            # 1. 意图词+参数内容（如"好的，设置温度22度"）
+            # 2. 多种意图词并存（如"好的，请取消"）
+            # 混合意图应完全交给LLM处理，避免误判
+            has_number = bool(re.search(r'\d+', text))  # 包含数字
+            has_param_keywords = any(word in text for word in ["温度", "负载率", "负载", "设置", "调整", "度", "℃", "%"])
+            has_confirm_word = any(word in text for word in ["确认", "好的", "可以", "是的", "启动", "执行", "授权", "同意", "OK", "ok", "没错", "没问题", "没毛病","行"])
+            has_cancel_word = any(word in text for word in ["取消", "不要", "算了", "拒绝", "不", "错了"])
+            has_preset_word = any(word in text for word in ["推荐", "预设", "默认", "帮我设置", "随便"])
+            
+            # 统计包含的意图类型数量
+            intent_types_count = sum([has_confirm_word, has_cancel_word, has_preset_word])
+            
+            # 判断是否为混合意图
+            # 情况1：意图词+参数内容（如"好的，设置温度22度"）
+            # 情况2：多种意图词并存（如"好的，请取消"、"确认，不要了"）
+            is_mixed_intent = (
+                ((has_confirm_word or has_cancel_word or has_preset_word) and (has_number or has_param_keywords))  # 意图+参数
+                or (intent_types_count >= 2)  # 多种意图并存
+            )
+            
+            if is_mixed_intent:
+                if intent_types_count >= 2:
+                    logger.bind(tag=TAG).info(
+                        f"【强制识别】检测到混合意图（多种意图词并存，如确认+取消），"
+                        f"交由LLM综合判断用户真实意图: {text}"
+                    )
+                else:
+                    logger.bind(tag=TAG).info(
+                        f"【强制识别】检测到混合意图（意图词+参数内容），"
+                        f"交由LLM综合判断参数和意图: {text}"
+                    )
+                # 不进行强制识别，继续执行后续的LLM意图识别
+                # 这样LLM可以同时处理confirm和参数提取
+            
+            # 只对"纯意图"进行强制识别
+            elif has_confirm_word:
+                logger.bind(tag=TAG).info("【强制识别】纯确认意图，强制返回confirm=true")
+                return '{"function_call": {"name": "get_temperature_load_rate", "arguments": {"confirm": true}}}'
+            
+            elif has_cancel_word:
+                logger.bind(tag=TAG).info("【强制识别】纯取消意图，强制返回cancel=true")
+                return '{"function_call": {"name": "get_temperature_load_rate", "arguments": {"cancel": true}}}'
+            
+            elif has_preset_word:
+                logger.bind(tag=TAG).info("【强制识别】纯预设意图，强制返回use_preset=true")
+                return '{"function_call": {"name": "get_temperature_load_rate", "arguments": {"use_preset": true}}}'
+            
+            else:
+                # 包含温度/负载率等参数关键词，但没有确认/取消/预设词
+                # 交给LLM进行参数提取
+                logger.bind(tag=TAG).info("【强制识别】检测到参数关键词，交由LLM识别和提取参数")
+                # 不return，继续执行后续的LLM意图识别流程
+        # ==================== 🎯 强制识别结束 ====================
 
         # 记录整体开始时间
         total_start_time = time.time()
@@ -221,8 +311,14 @@ class IntentProvider(IntentProviderBase):
             f"【意图识别性能】模型: {model_info}, 总耗时: {total_time:.4f}秒, LLM调用: {llm_time:.4f}秒, 查询: '{text[:20]}...'"
         )
 
-        # 尝试解析为JSON
+        # 尝试解析为JSON（增强健壮性）
         try:
+            # 修复常见的JSON格式问题
+            intent = intent.replace("'", '"')  # 单引号转双引号
+            intent = intent.replace("True", "true")  # Python布尔值转JSON
+            intent = intent.replace("False", "false")
+            intent = intent.replace("None", "null")
+            
             intent_data = json.loads(intent)
             # 如果包含function_call，则格式化为适合处理的格式
             if "function_call" in intent_data:

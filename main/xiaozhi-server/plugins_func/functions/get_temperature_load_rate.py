@@ -443,7 +443,7 @@ def clear_temp_load_rate_state(conn):
     ToolType.SYSTEM_CTL,
 )
 def get_temperature_load_rate(
-    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = True, cancel: bool = False
+    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = False, cancel: bool = False
 ):
     """获取温度和负载率参数，集成API调用，支持授权确认"""
     try:
@@ -663,7 +663,8 @@ def get_temperature_load_rate(
             # 请求用户确认（优化：使用专业话术）
             confirm_message = (
                 f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
-                f"(仅以上)\n"
+                f"\n"
+                f"（请注意：仅以上内容需要告知用户，不要添加其他内容！）\n"
                 f"\n"
                 f"【流程状态】waiting_first_confirm（需要用户授权）\n"
                 f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
@@ -738,7 +739,7 @@ def get_temperature_load_rate(
             # )
         
         # ==================== 阶段：第一次确认（参数确认 + 调用API） ====================
-        if state["stage"] == "waiting_first_confirm" and confirm:
+        if state["stage"] == "waiting_first_confirm":
             logger.bind(tag=TAG).info("=" * 80)
             logger.bind(tag=TAG).info("【第一次确认】用户确认参数")
             logger.bind(tag=TAG).info("=" * 80)
@@ -822,7 +823,8 @@ def get_temperature_load_rate(
 
                 prompt_message = (
                     f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
-                    f"(仅以上)\n"
+                    f"\n"
+                    f"（请注意：仅以上内容需要告知用户，不要添加其他内容！）\n"
                     f"\n"
                     f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
                     f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
@@ -858,12 +860,6 @@ def get_temperature_load_rate(
         state["stage"] = "collecting"
         initial_message = (
             "询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
-            "提示：不确定可说'用推荐值'。保持15字以内。\n"
-            "\n"
-            "【流程状态】collecting（参数收集阶段）\n"
-            "⚠️ 重要：用户一旦提供参数，必须立即调用 get_temperature_load_rate 并传入参数！\n"
-            "用户说【推荐值/帮我设置/默认】→ 调用 get_temperature_load_rate(use_preset=True)\n"
-            "用户说【取消】→ 调用 get_temperature_load_rate(cancel=True)"
         )
         return ActionResponse(
             action=Action.REQLLM,

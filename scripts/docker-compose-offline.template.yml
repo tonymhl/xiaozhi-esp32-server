@@ -23,14 +23,17 @@ services:
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      # 配置文件目录（支持热更新）
+      # 配置文件目录
       - ./data:/opt/xiaozhi-esp32-server/data
-      # 工具函数目录（支持热更新 - 修改后重启容器即可）
+      # 工具函数目录
       - ./plugins_func/functions:/opt/xiaozhi-esp32-server/plugins_func/functions
-      # 工具函数注册文件（支持热更新）
       - ./plugins_func/register.py:/opt/xiaozhi-esp32-server/plugins_func/register.py
-      # 模型文件挂接
+      # 记忆模块（新增）
+      - ./memory/mem_local_short/mem_local_short.py:/opt/xiaozhi-esp32-server/core/providers/memory/mem_local_short/mem_local_short.py
+      # 模型文件
       - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+      # 新增：Intent识别模块
+      - ./intent/intent_llm/intent_llm.py:/opt/xiaozhi-esp32-server/core/providers/intent/intent_llm/intent_llm.py
     deploy:
       resources:
         limits:

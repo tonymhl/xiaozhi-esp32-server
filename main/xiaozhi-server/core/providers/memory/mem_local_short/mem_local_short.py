@@ -206,7 +206,7 @@ class MemoryProvider(MemoryProviderBase):
         # 工具调用强化提示（始终附加）
         tool_reminder = """
         ⚠️【工具调用强制提醒】
-        - 如用户提及【确认】、【可以】、【启动】、【执行】、【好的】、【温度】、【负载率】、【节能优化】等关键词必须立即调用 get_temperature_load_rate 工具函数，不要只是文字回复！
+        - 如用户提及【确认】、【可以】、【启动】、【执行】、【好的】、【温度】、【负载率】、【节能优化】等关键词必须立即调用 get_temperature_load_rate 工具函数！
         - 确认操作：get_temperature_load_rate(confirm=True)
         - 取消操作：get_temperature_load_rate(cancel=True)
         - 设置参数：get_temperature_load_rate(temperature="XX", load_rate="XX")
