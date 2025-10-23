@@ -84,7 +84,7 @@ short_term_memory_prompt_only_content = """
 6、不要为了总结而总结，如果用户的聊天没有意义，请返回原来的历史记录也是可以的
 7、只需要返回总结摘要，严格控制在1800字内
 8、不要包含代码、xml，不需要解释、注释和说明，保存记忆时仅从对话提取信息，不要混入示例内容
-9、⚠️ 重要：如果对话涉及确认、温度、负载率、节能优化等工况设置内容，必须在总结中明确标注"需调用工具函数处理"
+9、⚠️ 重要：如果对话涉及确认、温度、负载率、节能优化等工况设置内容，必须在总结中明确标注"需调用工具函数get_temperature_load_rate处理"
 """
 
 
@@ -174,7 +174,7 @@ class MemoryProvider(MemoryProviderBase):
         msgStr += f"\n当前时间：{time_str}"
         
         # 强化工具调用提示
-        msgStr += "\n\n⚠️ 特别注意：如果对话涉及确认、温度、负载率、节能优化等关键词，必须在总结中保留'需要调用工具函数'的提示！"
+        msgStr += "\n\n⚠️ 特别注意：如果对话涉及【确认】、【可以】、【启动】、【执行】、【好的】、【温度】、【负载率】、【节能优化】等关键词，必须在总结中保留'需要调用工具函数get_temperature_load_rate'的提示！"
 
         if self.save_to_file:
             result = self.llm.response_no_stream(
@@ -205,14 +205,12 @@ class MemoryProvider(MemoryProviderBase):
     async def query_memory(self, query: str) -> str:
         # 工具调用强化提示（始终附加）
         tool_reminder = """
-
-⚠️【工具调用强制提醒】
-- 如用户提及"温度/负载率/负载/节能优化/确认/好的/是的/启动/执行/OK"等关键词
-- 必须立即调用 get_temperature_load_rate 工具函数，不要只是文字回复！
-- 确认操作：get_temperature_load_rate(confirm=True)
-- 取消操作：get_temperature_load_rate(cancel=True)
-- 设置参数：get_temperature_load_rate(temperature="XX", load_rate="XX")
-"""
+        ⚠️【工具调用强制提醒】
+        - 如用户提及【确认】、【可以】、【启动】、【执行】、【好的】、【温度】、【负载率】、【节能优化】等关键词必须立即调用 get_temperature_load_rate 工具函数，不要只是文字回复！
+        - 确认操作：get_temperature_load_rate(confirm=True)
+        - 取消操作：get_temperature_load_rate(cancel=True)
+        - 设置参数：get_temperature_load_rate(temperature="XX", load_rate="XX")
+        """
         
         if self.short_memory:
             return self.short_memory + tool_reminder

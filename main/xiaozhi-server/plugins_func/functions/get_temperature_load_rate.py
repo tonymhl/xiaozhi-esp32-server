@@ -663,6 +663,7 @@ def get_temperature_load_rate(
             # 请求用户确认（优化：使用专业话术）
             confirm_message = (
                 f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
+                f"(仅以上)\n"
                 f"\n"
                 f"【流程状态】waiting_first_confirm（需要用户授权）\n"
                 f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
@@ -821,6 +822,7 @@ def get_temperature_load_rate(
 
                 prompt_message = (
                     f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
+                    f"(仅以上)\n"
                     f"\n"
                     f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
                     f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
