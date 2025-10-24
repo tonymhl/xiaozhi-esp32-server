@@ -163,13 +163,13 @@ VALUES ('SYSTEM_PLUGIN_HA_PLAY_MUSIC',
         JSON_ARRAY(),
         70, 0, NOW(), 0, NOW());
 
--- 7. 温湿度设置
+-- 7. 确定/设置温度负载率
 INSERT INTO ai_model_provider (id, model_type, provider_code, name, fields,
                                sort, creator, create_date, updater, update_date)
-VALUES ('SYSTEM_PLUGIN_TEMP_HUMIDITY',
+VALUES ('SYSTEM_PLUGIN_TEMP_LOAD_RATE',
         'Plugin',
-        'get_temperature_humidity',
-        '温湿度设置',
+        'get_temperature_load_rate',
+        '确定/设置温度负载率',
         JSON_ARRAY(),
         80, 0, NOW(), 0, NOW());
 
