@@ -12,7 +12,7 @@ TAG = __name__
 logger = setup_logging()
 
 # API 配置默认值
-DEFAULT_API_BASE_URL = "http://10.2.152.90:9000"
+DEFAULT_API_BASE_URL = "http://10.3.193.243:9000"
 DEFAULT_API_TIMEOUT = 35  # 接口超时时间（秒）
 
 # 预设快速响应参数（毫秒级响应，避免超时）
