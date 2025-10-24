@@ -112,7 +112,7 @@ def validate_temperature(temp_value):
     if temp_value is None:
         return True, None
     if temp_value < -15 or temp_value > 45:
-        return False, f"温度{temp_value}℃超出合理范围（-15℃~45℃），请重新输入"
+        return False, f"温度{temp_value}℃超出合理范围（支持 负15℃ 到 45℃ 之间），请重新输入"
     return True, None
 
 
@@ -121,7 +121,7 @@ def validate_load_rate(load_rate_value):
     if load_rate_value is None:
         return True, None
     if load_rate_value < 0 or load_rate_value > 100:
-        return False, f"负载率{load_rate_value}%超出合理范围（0%-100%），请重新输入"
+        return False, f"负载率{load_rate_value}%超出合理范围（支持 0% 到 100% 之间），请重新输入"
     return True, None
 
 
