@@ -1,8 +1,12 @@
 import re
 import json
+import asyncio
 import requests
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
 from config.logger import setup_logging
+from core.handle.sendAudioHandle import send_stt_message, sendAudioMessage
+from core.utils.dialogue import Message
+from core.providers.tts.dto.dto import TTSMessageDTO, SentenceType, ContentType
 
 TAG = __name__
 logger = setup_logging()
@@ -22,10 +26,10 @@ GET_TEMPERATURE_LOAD_RATE_FUNCTION_DESC = {
     "function": {
         "name": "get_temperature_load_rate",
         "description": (
-            "【AI节能优化工具】用于设置新工况参数（温度和负载率），启动AI寻优计算。"
-            "⚠️ 重要：只要用户提及温度、负载率、确认、节能优化等相关内容，必须立即调用此函数，不要只是文字回复！"
-            "功能说明：根据用户输入新的温度（℃）和负载率（%），系统设置新工况并启动AI寻优计算。"
-            "用户可以：①只设置温度；②只设置负载率；③同时设置温度和负载率；④使用预设推荐值。"
+            "【AI节能优化工具】用于确认/设置温度和负载率，启动AI寻优计算。"
+            "⚠️ 重要：只要用户提及确认、启动、执行、好的、温度、负载率、负载、节能优化、OK等肯定词或相关内容，必须立即调用此函数！"
+            "功能说明：根据用户确认/输入的温度（℃）和负载率（%），设置新工况并启动AI寻优计算。"
+            "用户可以：①只设置温度；②只设置负载率；③同时设置温度和负载率；④使用预设推荐值；⑤确认/启动/执行/好的/温度/负载率/负载/节能优化/OK等肯定词进行确认。"
             "【必须调用的场景】："
             "- 用户提及'设置温度'、'调整负载率'、'温度XX度'、'负载率XX'等 → 立即调用本函数并传入参数"
             "- 用户说'确认/好的/是的/可以/没错/授权/同意/OK'等肯定词 → 立即调用get_temperature_load_rate(confirm=True)"
@@ -230,6 +234,188 @@ def call_confirm_api(base_url, status):
         return False, None, f"调用异常: {str(e)}"
 
 
+def call_status_api(base_url):
+    """调用接口3: /api/ai/status 查询AI优化状态
+    
+    Args:
+        base_url: API基础URL
+    
+    Returns:
+        (success: bool, response_data: dict, error_msg: str)
+        response_data 包含字段:
+        - is_optimizing: bool, AI是否优化中
+        - message: str, 成功或失败时会返回消息
+        - stage: str, 表示调用阶段 (idle, mode, optimize, cooling, complete)
+        - status: str, 是否成功 (success, fail)
+    """
+    url = f"{base_url}/api/ai/status"
+    
+    try:
+        logger.bind(tag=TAG).debug(f"调用状态API: {url}")
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        logger.bind(tag=TAG).debug(f"状态API响应: {data}")
+        
+        return True, data, None
+            
+    except requests.Timeout:
+        logger.bind(tag=TAG).error(f"状态API调用超时")
+        return False, None, "接口调用超时"
+    except requests.RequestException as e:
+        logger.bind(tag=TAG).error(f"状态API调用失败: {e}")
+        return False, None, f"接口调用失败: {str(e)}"
+    except Exception as e:
+        logger.bind(tag=TAG).error(f"状态API调用异常: {e}")
+        return False, None, f"调用异常: {str(e)}"
+
+
+async def poll_optimization_status(conn, api_base_url):
+    """异步轮询优化状态接口，实时反馈进度
+    
+    Args:
+        conn: 连接对象
+        api_base_url: API基础URL
+    """
+    last_stage = None  # 记录上一次的 stage
+    poll_interval = 1  # 轮询间隔（秒）
+    max_polls = 600  # 最大轮询次数（避免无限轮询，200次 * 3秒 = 10分钟）
+    poll_count = 0
+    
+    logger.bind(tag=TAG).info("=" * 80)
+    logger.bind(tag=TAG).info("【状态轮询】开始轮询优化状态")
+    logger.bind(tag=TAG).info("=" * 80)
+    
+    try:
+        while poll_count < max_polls:
+            poll_count += 1
+            await asyncio.sleep(poll_interval)
+            
+            # 调用状态接口
+            success, data, error = call_status_api(api_base_url)
+            
+            if not success:
+                logger.bind(tag=TAG).warning(f"【状态轮询】第{poll_count}次调用失败: {error}")
+                continue
+            
+            # 解析响应数据
+            is_optimizing = data.get("is_optimizing", False)
+            stage = data.get("stage", "")
+            message = data.get("message", "")
+            status = data.get("status", "")
+            
+            logger.bind(tag=TAG).info(
+                f"【状态轮询】第{poll_count}次 - "
+                f"status={status}, is_optimizing={is_optimizing}, stage={stage}"
+            )
+            
+            # 检查 stage 是否变化（只记录日志，不发送TTS）
+            if stage != last_stage and stage:
+                logger.bind(tag=TAG).info(
+                    f"【状态轮询】✅ 阶段变化: {last_stage} -> {stage}"
+                )
+                
+                # 只在日志中记录阶段变化，不向用户发送TTS消息
+                if message:
+                    logger.bind(tag=TAG).info(f"【状态轮询】阶段消息: {message}")
+                
+                last_stage = stage
+            
+            # 检查是否完成（优化不在进行中，且阶段为 complete）
+            if not is_optimizing and stage == "complete":
+                logger.bind(tag=TAG).info("【状态轮询】✅ 优化完成，停止轮询")
+                
+                # 播报最终完成消息
+                if message:
+                    logger.bind(tag=TAG).info(f"【状态轮询】播报最终消息: {message}")
+                    
+                    try:
+                        # 等待TTS初始化，参考 checkWakeupWords 的方式
+                        start_time = asyncio.get_event_loop().time()
+                        while asyncio.get_event_loop().time() - start_time < 3:
+                            if conn.tts:
+                                break
+                            await asyncio.sleep(0.1)
+                        
+                        if not conn.tts:
+                            logger.bind(tag=TAG).error("【状态轮询】TTS未初始化")
+                            break
+                        
+                        logger.bind(tag=TAG).info(f"【状态轮询】开始生成TTS音频: {message}")
+                        
+                        # 发送开始消息
+                        await send_stt_message(conn, message)
+                        conn.dialogue.put(Message(role="assistant", content=message))
+                        
+                        # 直接生成TTS音频（参考 checkWakeupWords 的方式）
+                        tts_result = await asyncio.to_thread(conn.tts.to_tts, message)
+                        
+                        if tts_result:
+                            logger.bind(tag=TAG).info(f"【状态轮询】TTS音频生成成功，开始播放")
+                            # 直接播放音频
+                            await sendAudioMessage(conn, SentenceType.FIRST, tts_result, message)
+                            await sendAudioMessage(conn, SentenceType.LAST, [], None)
+                            logger.bind(tag=TAG).info(f"【状态轮询】✅ 音频播放完成")
+                        else:
+                            logger.bind(tag=TAG).error(f"【状态轮询】TTS音频生成失败")
+                    except Exception as e:
+                        logger.bind(tag=TAG).error(f"【状态轮询】发送TTS失败: {e}")
+                        import traceback
+                        logger.bind(tag=TAG).error(f"【状态轮询】错误堆栈: {traceback.format_exc()}")
+                break
+            
+            # 检查是否失败
+            if status == "fail":
+                logger.bind(tag=TAG).error(f"【状态轮询】❌ 优化失败: {message}")
+                if message:
+                    try:
+                        # 等待TTS初始化
+                        start_time = asyncio.get_event_loop().time()
+                        while asyncio.get_event_loop().time() - start_time < 3:
+                            if conn.tts:
+                                break
+                            await asyncio.sleep(0.1)
+                        
+                        if not conn.tts:
+                            logger.bind(tag=TAG).error("【状态轮询】TTS未初始化")
+                            break
+                        
+                        logger.bind(tag=TAG).info(f"【状态轮询】开始生成失败消息TTS: {message}")
+                        
+                        # 发送消息
+                        await send_stt_message(conn, message)
+                        conn.dialogue.put(Message(role="assistant", content=message))
+                        
+                        # 直接生成并播放TTS音频
+                        tts_result = await asyncio.to_thread(conn.tts.to_tts, message)
+                        
+                        if tts_result:
+                            logger.bind(tag=TAG).info(f"【状态轮询】失败消息TTS生成成功，开始播放")
+                            await sendAudioMessage(conn, SentenceType.FIRST, tts_result, message)
+                            await sendAudioMessage(conn, SentenceType.LAST, [], None)
+                            logger.bind(tag=TAG).info(f"【状态轮询】✅ 失败消息播放完成")
+                        else:
+                            logger.bind(tag=TAG).error(f"【状态轮询】失败消息TTS生成失败")
+                    except Exception as e:
+                        logger.bind(tag=TAG).error(f"【状态轮询】发送失败消息TTS出错: {e}")
+                        import traceback
+                        logger.bind(tag=TAG).error(f"【状态轮询】错误堆栈: {traceback.format_exc()}")
+                break
+        
+        # 超过最大轮询次数
+        if poll_count >= max_polls:
+            logger.bind(tag=TAG).warning(f"【状态轮询】⚠️ 达到最大轮询次数({max_polls})，停止轮询")
+    
+    except Exception as e:
+        logger.bind(tag=TAG).error(f"【状态轮询】异常: {e}")
+        import traceback
+        logger.bind(tag=TAG).error(f"【状态轮询】错误堆栈: {traceback.format_exc()}")
+    
+    logger.bind(tag=TAG).info("【状态轮询】结束")
+    logger.bind(tag=TAG).info("=" * 80)
+
+
 def initialize_temp_load_rate_state(conn):
     """初始化或获取温度负载率设置状态"""
     if not hasattr(conn, "temp_load_rate_setting"):
@@ -257,7 +443,7 @@ def clear_temp_load_rate_state(conn):
     ToolType.SYSTEM_CTL,
 )
 def get_temperature_load_rate(
-    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = True, cancel: bool = False
+    conn, temperature: str = None, load_rate: str = None, use_preset: bool = False, confirm: bool = False, cancel: bool = False
 ):
     """获取温度和负载率参数，集成API调用，支持授权确认"""
     try:
@@ -289,7 +475,7 @@ def get_temperature_load_rate(
             return ActionResponse(
                 action=Action.RESPONSE,
                 result="已取消温度负载率设置",
-                response="好的，已取消温度负载率设置",
+                response="好的，已取消温度和负载率设置",
             )
         
         # ==================== 阶段：参数收集 ====================
@@ -379,6 +565,29 @@ def get_temperature_load_rate(
                     # 清除状态
                     clear_temp_load_rate_state(conn)
                     
+                    # ==================== 启动异步轮询任务 ====================
+                    logger.bind(tag=TAG).info("【第二次确认】准备启动状态轮询任务")
+                    
+                    # 检查事件循环状态
+                    if not conn.loop.is_running():
+                        logger.bind(tag=TAG).error("【第二次确认】事件循环未运行，无法启动轮询任务")
+                    else:
+                        # 提交异步轮询任务
+                        task = conn.loop.create_task(
+                            poll_optimization_status(conn, api_base_url)
+                        )
+                        
+                        # 非阻塞回调处理
+                        def handle_poll_done(f):
+                            try:
+                                f.result()
+                                logger.bind(tag=TAG).info("【状态轮询】任务完成")
+                            except Exception as e:
+                                logger.bind(tag=TAG).error(f"【状态轮询】任务失败: {e}")
+                        
+                        task.add_done_callback(handle_poll_done)
+                        logger.bind(tag=TAG).info("【第二次确认】✅ 状态轮询任务已启动")
+                    
                     logger.bind(tag=TAG).info("【第二次确认】返回完成消息")
                     return ActionResponse(
                         action=Action.RESPONSE,
@@ -390,17 +599,17 @@ def get_temperature_load_rate(
                     error_msg = f"确认失败: {error}"
                     logger.bind(tag=TAG).error(f"【第二次确认】❌ API返回异常: {error_msg}")
                     return ActionResponse(
-                        action=Action.RESPONSE,
+                        action=Action.REQLLM,
                         result=error_msg,
-                        response=error_msg,
+                        response=None,
                     )
             else:
                 # API调用失败
                 logger.bind(tag=TAG).error(f"【第二次确认】❌ API调用失败: {error}")
                 return ActionResponse(
-                    action=Action.RESPONSE,
+                    action=Action.REQLLM,
                     result=f"确认操作失败: {error}，请稍后重试",
-                    response=f"确认操作失败: {error}，请稍后重试",
+                    response=None,
                 )
         
         # ==================== 处理使用预设参数 ====================
@@ -436,22 +645,37 @@ def get_temperature_load_rate(
             state["stage"] = "waiting_first_confirm"
             
             logger.bind(tag=TAG).info("【使用预设参数】参数设置完成，请求用户确认")
+
+            # 构建工况参数信息（只包含非None的参数）
+            params_parts = []
+            if state.get("temperature"):
+                params_parts.append(f"温度{state['temperature']}")
+            if state.get("load_rate"):
+                params_parts.append(f"负载{state['load_rate']}")
             
+            params_info = "、".join(params_parts) if params_parts else "参数已设置"
+            
+            # 固定格式回复
+            fixed_response = f"当前新工况：{params_info}，请您授权确认是否执行AI节能优化？"
+            
+            logger.bind(tag=TAG).info(f"【第一次确认】预设参数——返回固定格式确认消息: {fixed_response}")
+
             # 请求用户确认（优化：使用专业话术）
             confirm_message = (
-                f"告知用户：新工况已设置，温度：{state['temperature']}，负载：{state['load_rate']}\n"
-                f"然后简洁询问：是否启动AI寻优计算？（15字以内）\n"
+                f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
+                f"\n"
+                f"（请注意：仅以上内容需要告知用户，不要添加其他内容！）\n"
                 f"\n"
                 f"【流程状态】waiting_first_confirm（需要用户授权）\n"
-                f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
-                f"用户说【取消/拒绝/不要】→ 立即调用 get_temperature_load_rate(cancel=True)"
+                f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
+                f"用户说【取消/拒绝/不要】等否定性词语→ 请你立即调用 get_temperature_load_rate(cancel=True)"
             )
             
-            return ActionResponse(
-                action=Action.REQLLM,
-                result=confirm_message,
-                response=None,
-            )
+            # return ActionResponse(
+            #     action=Action.REQLLM,
+            #     result=confirm_message,
+            #     response=fixed_response,
+            # )
         
         # ==================== 阶段：参数收集完成，请求第一次确认 ====================
         # 只要有至少一个参数就可以进入确认阶段（接口支持单参数）
@@ -501,7 +725,7 @@ def get_temperature_load_rate(
             
             confirm_message = (
                 f"告知用户：新工况已设置，温度：{temp_str}，负载：{load_str}\n"
-                f"然后简洁询问：是否启动AI寻优计算？（15字以内）\n"
+                f"然后简洁询问：是否启动AI寻优计算？\n"
                 f"\n"
                 f"【流程状态】waiting_first_confirm（需要用户授权）\n"
                 f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
@@ -515,7 +739,7 @@ def get_temperature_load_rate(
             # )
         
         # ==================== 阶段：第一次确认（参数确认 + 调用API） ====================
-        if state["stage"] == "waiting_first_confirm" and confirm:
+        if state["stage"] == "waiting_first_confirm":
             logger.bind(tag=TAG).info("=" * 80)
             logger.bind(tag=TAG).info("【第一次确认】用户确认参数")
             logger.bind(tag=TAG).info("=" * 80)
@@ -537,8 +761,8 @@ def get_temperature_load_rate(
                 # API1调用失败
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤1】❌ ASR API调用失败: {error1}")
                 return ActionResponse(
-                    action=Action.RESPONSE,
-                    result=None,
+                    action=Action.REQLLM,
+                    result=f"参数设置失败: {error1}",
                     response=f"参数设置失败: {error1}",
                 )
             
@@ -563,7 +787,7 @@ def get_temperature_load_rate(
                 # API2调用失败
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ 确认API调用失败: {error2}")
                 return ActionResponse(
-                    action=Action.RESPONSE,
+                    action=Action.REQLLM,
                     result=f"确认操作失败: {error2}，请稍后重试",
                     response=f"确认操作失败: {error2}，请稍后重试",
                 )
@@ -582,28 +806,44 @@ def get_temperature_load_rate(
                 
                 logger.bind(tag=TAG).info("【第一次确认】两个API都调用成功，状态已更新为 waiting_second_confirm")
                 logger.bind(tag=TAG).info("【第一次确认】请求用户第二次确认（AI节能优化）")
+
+                # 构建工况参数信息（只包含非None的参数）
+                params_parts = []
+                if state.get("temperature"):
+                    params_parts.append(f"温度{state['temperature']}")
+                if state.get("load_rate"):
+                    params_parts.append(f"负载{state['load_rate']}")
                 
+                params_info = "、".join(params_parts) if params_parts else "参数已设置"
+                
+                # 固定格式回复
+                fixed_response = f"当前新工况：{params_info}，请您授权确认是否执行AI节能优化？"
+                
+                logger.bind(tag=TAG).info(f"【第一次确认】返回固定格式确认消息: {fixed_response}")
+
                 prompt_message = (
-                    f"询问：是否启动AI寻优计算？（15字以内）\n"
+                    f"请你按照以下固定格式告知用户：当前新工况：{params_info}，请您授权确认是否执行AI节能优化？\n"
+                    f"\n"
+                    f"（请注意：仅以上内容需要告知用户，不要添加其他内容！）\n"
                     f"\n"
                     f"【流程状态】waiting_second_confirm（最后一步：需要用户授权启动AI寻优计算）\n"
-                    f"用户说【确认/授权/同意/好的/是的】→ 立即调用 get_temperature_load_rate(confirm=True)\n"
-                    f"用户说【取消/拒绝/不要】→ 立即调用 get_temperature_load_rate(cancel=True)"
+                    f"用户说【确认/授权/同意/好的/是的】等肯定性词语→ 请你立即调用 get_temperature_load_rate(confirm=True)\n"
+                    f"用户说【取消/拒绝/不要】等否定性词语→ 请你立即调用 get_temperature_load_rate(cancel=True)"
                 )
-                
+
                 return ActionResponse(
                     action=Action.REQLLM,
                     result=prompt_message,
-                    response=None,
+                    response=fixed_response,
                 )
             else:
                 # API2返回异常
                 error_msg = f"确认失败: {error2}"
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ API返回异常: {error_msg}")
                 return ActionResponse(
-                    action=Action.RESPONSE,
+                    action=Action.REQLLM,
                     result=error_msg,
-                    response=error2,
+                    response=None,
                 )
 
         # ==================== 已移除：参数收集中的反问环节 ====================
@@ -620,12 +860,6 @@ def get_temperature_load_rate(
         state["stage"] = "collecting"
         initial_message = (
             "询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
-            "提示：不确定可说'用推荐值'。保持15字以内。\n"
-            "\n"
-            "【流程状态】collecting（参数收集阶段）\n"
-            "⚠️ 重要：用户一旦提供参数，必须立即调用 get_temperature_load_rate 并传入参数！\n"
-            "用户说【推荐值/帮我设置/默认】→ 调用 get_temperature_load_rate(use_preset=True)\n"
-            "用户说【取消】→ 调用 get_temperature_load_rate(cancel=True)"
         )
         return ActionResponse(
             action=Action.REQLLM,
