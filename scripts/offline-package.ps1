@@ -95,6 +95,10 @@ function New-PackageDirectory {
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "mysql\data") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "uploadfile") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "models\SenseVoiceSmall") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "redis\data") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "memory\mem_local_short") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "intent\intent_llm") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "docker-config") -Force | Out-Null
 
     Print-Success "打包目录创建完成"
 }
@@ -105,8 +109,14 @@ function Build-DockerImages {
 
     Set-Location $global:ProjectRoot
 
-    Print-Info "编译xiaozhi-esp32-server镜像..."
-    docker build -t xiaozhi-esp32-server:server_custom -f .\Dockerfile-server .
+    Print-Info "编译xiaozhi-esp32-server镜像（使用离线专用Dockerfile）..."
+    if (Test-Path ".\Dockerfile-server-offline") {
+        Print-Info "检测到Dockerfile-server-offline，使用离线构建方式"
+        docker build -t xiaozhi-esp32-server:server_custom -f .\Dockerfile-server-offline .
+    } else {
+        Print-Warning "未找到Dockerfile-server-offline，使用标准Dockerfile-server"
+        docker build -t xiaozhi-esp32-server:server_custom -f .\Dockerfile-server .
+    }
 
     Print-Info "编译xiaozhi-esp32-server-web镜像..."
     docker build -t xiaozhi-esp32-server:web_custom -f .\Dockerfile-web .
@@ -229,6 +239,38 @@ function Copy-ConfigFiles {
         }
     } else {
         Print-Warning "未找到plugins_func目录"
+    }
+
+    Print-Info "复制记忆模块（支持热更新）..."
+    $memoryDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\core\providers\memory\mem_local_short"
+    if (Test-Path $memoryDir) {
+        $memLocalShortFile = Join-Path $memoryDir "mem_local_short.py"
+        if (Test-Path $memLocalShortFile) {
+            Copy-Item $memLocalShortFile (Join-Path $global:PackageDir "memory\mem_local_short\") -Force
+            Print-Success "已复制mem_local_short.py"
+        }
+    } else {
+        Print-Warning "未找到memory模块"
+    }
+
+    Print-Info "复制Intent识别模块（支持热更新）..."
+    $intentDir = Join-Path $global:ProjectRoot "main\xiaozhi-server\core\providers\intent\intent_llm"
+    if (Test-Path $intentDir) {
+        $intentLlmFile = Join-Path $intentDir "intent_llm.py"
+        if (Test-Path $intentLlmFile) {
+            Copy-Item $intentLlmFile (Join-Path $global:PackageDir "intent\intent_llm\") -Force
+            Print-Success "已复制intent_llm.py"
+        }
+    } else {
+        Print-Warning "未找到intent模块"
+    }
+
+    Print-Info "复制Docker配置文件..."
+    $dockerConfigSource = Join-Path $global:ProjectRoot "docs\docker"
+    if (Test-Path $dockerConfigSource) {
+        Copy-Item (Join-Path $dockerConfigSource "nginx.conf") (Join-Path $global:PackageDir "docker-config\") -Force -ErrorAction SilentlyContinue
+        Copy-Item (Join-Path $dockerConfigSource "start.sh") (Join-Path $global:PackageDir "docker-config\") -Force -ErrorAction SilentlyContinue
+        Print-Success "已复制Docker配置文件"
     }
 
     Print-Success "配置文件复制完成"

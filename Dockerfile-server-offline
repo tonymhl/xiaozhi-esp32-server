@@ -1,0 +1,49 @@
+# ==================================================================================
+# 小智ESP32服务器 - 离线部署专用Dockerfile
+# 
+# 特点：
+# - 自包含，不依赖远程镜像
+# - 适合离线环境一次性构建
+# - 包含所有系统依赖和Python包
+# ==================================================================================
+
+FROM python:3.10-slim
+
+WORKDIR /opt/xiaozhi-esp32-server
+
+# 安装系统依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libopus0 \
+        ffmpeg \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# 配置pip使用国内镜像源（阿里云）并设置超时和重试
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
+    pip config set global.trusted-host mirrors.aliyun.com && \
+    pip config set global.timeout 120 && \
+    pip config set install.retries 5
+
+# 复制requirements.txt
+COPY main/xiaozhi-server/requirements.txt .
+
+# 安装Python依赖
+# 先安装PyTorch（较大的包），然后安装其他依赖
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir torch==2.2.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu --default-timeout=120 --retries 5 && \
+    pip install --no-cache-dir -r requirements.txt --default-timeout=120 --retries 5
+
+# 复制应用代码
+COPY main/xiaozhi-server .
+
+# 暴露端口
+EXPOSE 8000 8003
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 启动应用
+CMD ["python", "app.py"]
+

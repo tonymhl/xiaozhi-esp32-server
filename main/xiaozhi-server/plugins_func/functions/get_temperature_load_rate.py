@@ -280,11 +280,16 @@ async def poll_optimization_status(conn, api_base_url):
     """
     last_stage = None  # 记录上一次的 stage
     poll_interval = 1  # 轮询间隔（秒）
-    max_polls = 600  # 最大轮询次数（避免无限轮询，200次 * 3秒 = 10分钟）
+    max_polls = 600  # 最大轮询次数（避免无限轮询，600次 * 1秒 = 10分钟）
+    min_duration = 18  # 最小耗时（秒），避免语音叠加
     poll_count = 0
+    
+    # 记录开始时间
+    start_time = asyncio.get_event_loop().time()
     
     logger.bind(tag=TAG).info("=" * 80)
     logger.bind(tag=TAG).info("【状态轮询】开始轮询优化状态")
+    logger.bind(tag=TAG).info(f"【状态轮询】最小耗时设置: {min_duration}秒（避免语音叠加）")
     logger.bind(tag=TAG).info("=" * 80)
     
     try:
@@ -324,7 +329,23 @@ async def poll_optimization_status(conn, api_base_url):
             
             # 检查是否完成（优化不在进行中，且阶段为 complete）
             if not is_optimizing and stage == "complete":
-                logger.bind(tag=TAG).info("【状态轮询】✅ 优化完成，停止轮询")
+                logger.bind(tag=TAG).info("【状态轮询】✅ 优化完成，准备停止轮询")
+                
+                # 计算已经过的时间
+                elapsed_time = asyncio.get_event_loop().time() - start_time
+                logger.bind(tag=TAG).info(f"【状态轮询】已耗时: {elapsed_time:.2f}秒")
+                
+                # 如果未达到最小耗时，等待补足（避免语音叠加）
+                if elapsed_time < min_duration:
+                    wait_time = min_duration - elapsed_time
+                    logger.bind(tag=TAG).info(
+                        f"【状态轮询】未达到最小耗时({min_duration}秒)，"
+                        f"等待 {wait_time:.2f}秒 后再播报（避免语音叠加）"
+                    )
+                    await asyncio.sleep(wait_time)
+                    logger.bind(tag=TAG).info("【状态轮询】等待完成，开始播报")
+                else:
+                    logger.bind(tag=TAG).info(f"【状态轮询】已超过最小耗时，立即播报")
                 
                 # 播报最终完成消息
                 if message:
@@ -332,8 +353,8 @@ async def poll_optimization_status(conn, api_base_url):
                     
                     try:
                         # 等待TTS初始化，参考 checkWakeupWords 的方式
-                        start_time = asyncio.get_event_loop().time()
-                        while asyncio.get_event_loop().time() - start_time < 3:
+                        tts_wait_start = asyncio.get_event_loop().time()
+                        while asyncio.get_event_loop().time() - tts_wait_start < 3:
                             if conn.tts:
                                 break
                             await asyncio.sleep(0.1)
@@ -368,11 +389,28 @@ async def poll_optimization_status(conn, api_base_url):
             # 检查是否失败
             if status == "fail":
                 logger.bind(tag=TAG).error(f"【状态轮询】❌ 优化失败: {message}")
+                
+                # 计算已经过的时间
+                elapsed_time = asyncio.get_event_loop().time() - start_time
+                logger.bind(tag=TAG).info(f"【状态轮询】已耗时: {elapsed_time:.2f}秒")
+                
+                # 如果未达到最小耗时，等待补足（避免语音叠加）
+                if elapsed_time < min_duration:
+                    wait_time = min_duration - elapsed_time
+                    logger.bind(tag=TAG).info(
+                        f"【状态轮询】未达到最小耗时({min_duration}秒)，"
+                        f"等待 {wait_time:.2f}秒 后再播报失败消息（避免语音叠加）"
+                    )
+                    await asyncio.sleep(wait_time)
+                    logger.bind(tag=TAG).info("【状态轮询】等待完成，开始播报失败消息")
+                else:
+                    logger.bind(tag=TAG).info(f"【状态轮询】已超过最小耗时，立即播报失败消息")
+                
                 if message:
                     try:
                         # 等待TTS初始化
-                        start_time = asyncio.get_event_loop().time()
-                        while asyncio.get_event_loop().time() - start_time < 3:
+                        tts_wait_start = asyncio.get_event_loop().time()
+                        while asyncio.get_event_loop().time() - tts_wait_start < 3:
                             if conn.tts:
                                 break
                             await asyncio.sleep(0.1)
@@ -832,7 +870,7 @@ def get_temperature_load_rate(
                 )
 
                 return ActionResponse(
-                    action=Action.REQLLM,
+                    action=Action.RESPONSE,
                     result=prompt_message,
                     response=fixed_response,
                 )
@@ -859,12 +897,16 @@ def get_temperature_load_rate(
         logger.bind(tag=TAG).info("【参数收集中】两个参数都没有，询问用户提供参数或使用预设值")
         state["stage"] = "collecting"
         initial_message = (
-            "询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
+            "请你礼貌且简洁地询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
         )
+        fixed_response = (
+            "请设置新工况温度和负载率参数。\n"
+        )
+
         return ActionResponse(
-            action=Action.REQLLM,
+            action=Action.RESPONSE,
             result=initial_message,
-            response=None,
+            response=fixed_response,
         )
     
     except Exception as e:

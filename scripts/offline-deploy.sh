@@ -163,10 +163,10 @@ create_directories() {
 
     cd "$DEPLOY_DIR"
 
-    mkdir -p data mysql/data uploadfile models/SenseVoiceSmall plugins_func/functions
+    mkdir -p data mysql/data uploadfile models/SenseVoiceSmall plugins_func/functions redis/data memory/mem_local_short intent/intent_llm docker-config
 
-    chmod -R 755 data uploadfile models plugins_func
-    chmod -R 777 mysql/data
+    chmod -R 755 data uploadfile models plugins_func memory intent docker-config
+    chmod -R 777 mysql/data redis/data
 
     print_success "目录结构创建完成"
 }
