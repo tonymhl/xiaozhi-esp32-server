@@ -500,7 +500,7 @@ def get_temperature_load_rate(
             logger.bind(tag=TAG).info(f"【取消操作】用户取消设置，当前阶段：{state['stage']}")
             
             # 如果在确认阶段，调用API取消
-            if state["stage"] in ["waiting_first_confirm", "waiting_second_confirm"]:
+            if state["stage"] in ["waiting_first_confirm", "waiting_second_confirm", "collecting"]:
                 logger.bind(tag=TAG).info("【取消操作】调用API取消...")
                 success, data, error = call_confirm_api(api_base_url, 0)
                 if success:
@@ -561,8 +561,20 @@ def get_temperature_load_rate(
         has_temperature = state["temperature"] is not None
         has_load_rate = state["load_rate"] is not None
         
+        # ==================== 重要：检测参数重新输入的情况 ====================
+        # 如果用户在等待确认状态下提供了新参数（而不是confirm/cancel），应该重置状态
+        if state["stage"] in ["waiting_first_confirm", "waiting_second_confirm"]:
+            # 检查用户是否提供了新的参数输入（而不是确认/取消操作）
+            if (has_temperature or has_load_rate) and not confirm and not cancel and not use_preset:
+                logger.bind(tag=TAG).info("=" * 80)
+                logger.bind(tag=TAG).info(f"【参数重新输入】检测到用户在{state['stage']}状态下重新输入参数")
+                logger.bind(tag=TAG).info("【参数重新输入】重置状态为collecing，重新开始参数确认流程")
+                logger.bind(tag=TAG).info("=" * 80)
+                # 重置为参数收集状态，让流程重新走一遍确认流程
+                state["stage"] = "collecting"
+        
         # ==================== 阶段：第二次确认（AI节能优化确认） ====================
-        if state["stage"] == "waiting_second_confirm" and confirm:
+        if confirm:
             logger.bind(tag=TAG).info("=" * 80)
             logger.bind(tag=TAG).info("【第二次确认】用户确认使用AI节能优化")
             logger.bind(tag=TAG).info("=" * 80)
@@ -645,9 +657,9 @@ def get_temperature_load_rate(
                 # API调用失败
                 logger.bind(tag=TAG).error(f"【第二次确认】❌ API调用失败: {error}")
                 return ActionResponse(
-                    action=Action.REQLLM,
+                    action=Action.RESPONSE,
                     result=f"确认操作失败: {error}，请稍后重试。（15字以内）",
-                    response=None,
+                    response=f"请先设置温度和负载率。",
                 )
         
         # ==================== 处理使用预设参数 ====================
@@ -900,7 +912,7 @@ def get_temperature_load_rate(
             "请你礼貌且简洁地询问用户：请设置新工况参数，温度（℃）和负载率（%）。\n"
         )
         fixed_response = (
-            "请设置新工况温度和负载率参数。\n"
+            "请设置新工况温度和负载率。"
         )
 
         return ActionResponse(
