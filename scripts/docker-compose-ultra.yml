@@ -1,0 +1,206 @@
+# Docker Offline Deployment Configuration - ULTRA PERFORMANCE
+# Xiaozhi ESP32 Server - All Modules
+# 
+# 超高配方案: 32核CPU / 56GB内存
+# 适合: 20-50并发用户，高负载场景，大型模型
+
+version: '3'
+services:
+  # Server Module - Python Service
+  xiaozhi-esp32-server:
+    image: xiaozhi-esp32-server:server_custom
+    container_name: xiaozhi-esp32-server
+    depends_on:
+      xiaozhi-esp32-server-db:
+        condition: service_healthy
+      xiaozhi-esp32-server-redis:
+        condition: service_healthy
+      xiaozhi-esp32-server-web:
+        condition: service_started
+    restart: always
+    networks:
+      - default
+    ports:
+      # WebSocket Service
+      - "8000:8000"
+      # HTTP Service for Vision Analysis
+      - "8003:8003"
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - TZ=Asia/Shanghai
+      # Python性能优化
+      - PYTHONUNBUFFERED=1
+      - MALLOC_ARENA_MAX=2
+    volumes:
+      # Configuration Files
+      - ./data:/opt/xiaozhi-esp32-server/data
+      # Tool Functions (Hot Reload)
+      - ./plugins_func/functions:/opt/xiaozhi-esp32-server/plugins_func/functions
+      - ./plugins_func/register.py:/opt/xiaozhi-esp32-server/plugins_func/register.py
+      # Memory Module (Hot Reload)
+      - ./memory/mem_local_short/mem_local_short.py:/opt/xiaozhi-esp32-server/core/providers/memory/mem_local_short/mem_local_short.py
+      # Intent Recognition Module (Hot Reload)
+      - ./intent/intent_llm/intent_llm.py:/opt/xiaozhi-esp32-server/core/providers/intent/intent_llm/intent_llm.py
+      # Model Files
+      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
+    deploy:
+      resources:
+        limits:
+          cpus: '16'     # 从4核提升到16核
+          memory: 32G    # 从8G提升到32G
+        reservations:
+          cpus: '8'      # 从2核提升到8核
+          memory: 16G    # 从4G提升到16G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Web Module - Vue Frontend + Java Backend
+  xiaozhi-esp32-server-web:
+    image: xiaozhi-esp32-server:web_custom
+    container_name: xiaozhi-esp32-server-web
+    restart: always
+    networks:
+      - default
+    depends_on:
+      xiaozhi-esp32-server-db:
+        condition: service_healthy
+      xiaozhi-esp32-server-redis:
+        condition: service_healthy
+    ports:
+      # Web Management Console
+      - "8002:8002"
+    environment:
+      - TZ=Asia/Shanghai
+      - SPRING_DATASOURCE_DRUID_URL=jdbc:mysql://xiaozhi-esp32-server-db:3306/xiaozhi_esp32_server?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&connectTimeout=30000&socketTimeout=30000&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+      - SPRING_DATASOURCE_DRUID_USERNAME=root
+      - SPRING_DATASOURCE_DRUID_PASSWORD=123456
+      - SPRING_DATA_REDIS_HOST=xiaozhi-esp32-server-redis
+      - SPRING_DATA_REDIS_PASSWORD=
+      - SPRING_DATA_REDIS_PORT=6379
+      # Java性能优化 - 更大堆内存
+      - JAVA_OPTS=-Xms4g -Xmx8g -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled -XX:InitiatingHeapOccupancyPercent=45
+    volumes:
+      # Upload Files
+      - ./uploadfile:/uploadfile
+      # Docker Configuration (Hot Reload)
+      - ./docker-config/start.sh:/start.sh:ro
+      - ./docker-config/nginx.conf:/etc/nginx/nginx.conf:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '6'      # 从2核提升到6核
+          memory: 12G    # 从4G提升到12G
+        reservations:
+          cpus: '3'      # 从1核提升到3核
+          memory: 6G     # 从2G提升到6G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Database Module - MySQL
+  xiaozhi-esp32-server-db:
+    image: mysql:latest
+    container_name: xiaozhi-esp32-server-db
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    networks:
+      - default
+    expose:
+      - 3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=xiaozhi_esp32_server
+      - MYSQL_INITDB_ARGS="--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=5000               # 大幅提升连接数
+      - --innodb_buffer_pool_size=4G        # 提升到4G
+      - --innodb_log_file_size=512M         # 提升到512M
+      - --innodb_flush_log_at_trx_commit=2  # 性能优化
+      - --innodb_flush_method=O_DIRECT      # 减少IO
+      - --innodb_io_capacity=2000           # IO能力
+      - --innodb_read_io_threads=8          # 读线程
+      - --innodb_write_io_threads=8         # 写线程
+      - --query_cache_size=128M             # 查询缓存
+      - --tmp_table_size=128M               # 临时表大小
+      - --max_heap_table_size=128M
+      - --table_open_cache=4096             # 表缓存
+      - --thread_cache_size=256             # 线程缓存
+    deploy:
+      resources:
+        limits:
+          cpus: '6'      # 从2核提升到6核
+          memory: 8G     # 从2G提升到8G
+        reservations:
+          cpus: '3'      # 从1核提升到3核
+          memory: 4G     # 从1G提升到4G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  # Redis Module - Cache Service
+  xiaozhi-esp32-server-redis:
+    image: redis:latest
+    container_name: xiaozhi-esp32-server-redis
+    restart: always
+    networks:
+      - default
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command:
+      - redis-server
+      - --maxmemory 3gb                 # 大幅提升到3GB
+      - --maxmemory-policy allkeys-lru
+      - --save 900 1
+      - --save 300 10
+      - --save 60 10000
+      - --appendonly yes                # 开启AOF持久化
+      - --appendfsync everysec
+      - --tcp-backlog 511
+      - --timeout 0
+      - --tcp-keepalive 300
+      - --databases 16
+      - --maxclients 20000              # 最大客户端连接数
+      - --io-threads 4                  # IO多线程
+      - --io-threads-do-reads yes
+    volumes:
+      - ./redis/data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '4'      # 从1核提升到4核
+          memory: 4G     # 从1G提升到4G
+        reservations:
+          cpus: '2'      # 从0.5核提升到2核
+          memory: 2G     # 从512M提升到2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+networks:
+  default:
+    driver: bridge
+
