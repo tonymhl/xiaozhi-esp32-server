@@ -513,7 +513,7 @@ def get_temperature_load_rate(
             return ActionResponse(
                 action=Action.RESPONSE,
                 result="已取消温度负载率设置",
-                response="好的，已取消温度和负载率设置",
+                response="已取消温度和负载率设置",
             )
         
         # ==================== 阶段：参数收集 ====================
@@ -634,7 +634,7 @@ def get_temperature_load_rate(
                     )
                 else:
                     # API返回异常
-                    error_msg = f"确认失败: {error}"
+                    error_msg = f"确认失败: {error}（15字以内）"
                     logger.bind(tag=TAG).error(f"【第二次确认】❌ API返回异常: {error_msg}")
                     return ActionResponse(
                         action=Action.REQLLM,
@@ -646,7 +646,7 @@ def get_temperature_load_rate(
                 logger.bind(tag=TAG).error(f"【第二次确认】❌ API调用失败: {error}")
                 return ActionResponse(
                     action=Action.REQLLM,
-                    result=f"确认操作失败: {error}，请稍后重试",
+                    result=f"确认操作失败: {error}，请稍后重试。（15字以内）",
                     response=None,
                 )
         
@@ -800,8 +800,8 @@ def get_temperature_load_rate(
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤1】❌ ASR API调用失败: {error1}")
                 return ActionResponse(
                     action=Action.REQLLM,
-                    result=f"参数设置失败: {error1}",
-                    response=f"参数设置失败: {error1}",
+                    result=f"参数设置失败: {error1}（15字以内）",
+                    response=f"参数设置失败: {error1}（15字以内）",
                 )
             
             # API1调用成功
@@ -826,8 +826,8 @@ def get_temperature_load_rate(
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ 确认API调用失败: {error2}")
                 return ActionResponse(
                     action=Action.REQLLM,
-                    result=f"确认操作失败: {error2}，请稍后重试",
-                    response=f"确认操作失败: {error2}，请稍后重试",
+                    result=f"确认操作失败: {error2}，请稍后重试（15字以内）",
+                    response=f"确认操作失败: {error2}，请稍后重试（15字以内）",
                 )
             
             # API2调用成功
@@ -876,7 +876,7 @@ def get_temperature_load_rate(
                 )
             else:
                 # API2返回异常
-                error_msg = f"确认失败: {error2}"
+                error_msg = f"确认失败: {error2}（15字以内）"
                 logger.bind(tag=TAG).error(f"【第一次确认-步骤2】❌ API返回异常: {error_msg}")
                 return ActionResponse(
                     action=Action.REQLLM,
@@ -905,7 +905,7 @@ def get_temperature_load_rate(
 
         return ActionResponse(
             action=Action.RESPONSE,
-            result=initial_message,
+            result=fixed_response,
             response=fixed_response,
         )
     
