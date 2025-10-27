@@ -163,15 +163,15 @@ function Copy-ConfigFiles {
     Print-Title "复制配置文件"
 
     Print-Info "复制docker-compose配置..."
-    $composeSource = Join-Path $global:ProjectRoot "main\xiaozhi-server\docker-compose_all.yml"
+    $composeSource = Join-Path $global:ProjectRoot "scripts\docker-compose-offline.template.yml"
     $composeDest = Join-Path $global:PackageDir "docker-compose-offline.yml"
-    Copy-Item $composeSource $composeDest -Force
-
-    # 修改docker-compose配置，使用自定义镜像
-    $composeContent = Get-Content $composeDest -Raw
-    $composeContent = $composeContent -replace 'ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:server_latest', 'xiaozhi-esp32-server:server_custom'
-    $composeContent = $composeContent -replace 'ghcr.nju.edu.cn/xinnan-tech/xiaozhi-esp32-server:web_latest', 'xiaozhi-esp32-server:web_custom'
-    Set-Content -Path $composeDest -Value $composeContent -Encoding UTF8
+    
+    # 使用UTF8无BOM编码复制，确保不会出现乱码
+    $content = Get-Content $composeSource -Raw -Encoding UTF8
+    # 将CRLF转换为LF（Unix格式）
+    $content = $content -replace "`r`n", "`n"
+    [System.IO.File]::WriteAllText($composeDest, $content, [System.Text.UTF8Encoding]::new($false))
+    Print-Success "已复制docker-compose-offline.yml（UTF8-LF格式）"
 
     Print-Info "复制应用配置文件..."
     
@@ -265,12 +265,30 @@ function Copy-ConfigFiles {
         Print-Warning "未找到intent模块"
     }
 
-    Print-Info "复制Docker配置文件..."
+    Print-Info "复制Docker配置文件（并转换换行符）..."
     $dockerConfigSource = Join-Path $global:ProjectRoot "docs\docker"
     if (Test-Path $dockerConfigSource) {
-        Copy-Item (Join-Path $dockerConfigSource "nginx.conf") (Join-Path $global:PackageDir "docker-config\") -Force -ErrorAction SilentlyContinue
-        Copy-Item (Join-Path $dockerConfigSource "start.sh") (Join-Path $global:PackageDir "docker-config\") -Force -ErrorAction SilentlyContinue
-        Print-Success "已复制Docker配置文件"
+        # 复制nginx.conf
+        $nginxConf = Join-Path $dockerConfigSource "nginx.conf"
+        if (Test-Path $nginxConf) {
+            $nginxContent = Get-Content $nginxConf -Raw -Encoding UTF8
+            $nginxContent = $nginxContent -replace "`r`n", "`n"
+            $nginxDest = Join-Path $global:PackageDir "docker-config\nginx.conf"
+            [System.IO.File]::WriteAllText($nginxDest, $nginxContent, [System.Text.UTF8Encoding]::new($false))
+            Print-Success "已复制nginx.conf（Unix LF格式）"
+        }
+        
+        # 复制start.sh
+        $startSh = Join-Path $dockerConfigSource "start.sh"
+        if (Test-Path $startSh) {
+            $startContent = Get-Content $startSh -Raw -Encoding UTF8
+            $startContent = $startContent -replace "`r`n", "`n"
+            $startDest = Join-Path $global:PackageDir "docker-config\start.sh"
+            [System.IO.File]::WriteAllText($startDest, $startContent, [System.Text.UTF8Encoding]::new($false))
+            Print-Success "已复制start.sh（Unix LF格式）"
+        }
+    } else {
+        Print-Warning "未找到docker配置目录"
     }
 
     Print-Success "配置文件复制完成"

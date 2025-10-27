@@ -1,39 +1,43 @@
-# Docker离线部署配置文件
-# 小智ESP32服务器 - 全模块部署
+# Docker Offline Deployment Configuration
+# Xiaozhi ESP32 Server - All Modules
 
 version: '3'
 services:
-  # Server模块 - Python服务
+  # Server Module - Python Service
   xiaozhi-esp32-server:
     image: xiaozhi-esp32-server:server_custom
     container_name: xiaozhi-esp32-server
     depends_on:
-      - xiaozhi-esp32-server-db
-      - xiaozhi-esp32-server-redis
+      xiaozhi-esp32-server-db:
+        condition: service_healthy
+      xiaozhi-esp32-server-redis:
+        condition: service_healthy
+      xiaozhi-esp32-server-web:
+        condition: service_started
     restart: always
     networks:
       - default
     ports:
-      # WebSocket服务端
+      # WebSocket Service
       - "8000:8000"
-      # HTTP服务的端口，用于视觉分析接口
+      # HTTP Service for Vision Analysis
       - "8003:8003"
     security_opt:
       - seccomp:unconfined
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      # 配置文件目录
+      # Configuration Files
       - ./data:/opt/xiaozhi-esp32-server/data
-      # 工具函数目录
+      # Tool Functions (Hot Reload)
       - ./plugins_func/functions:/opt/xiaozhi-esp32-server/plugins_func/functions
       - ./plugins_func/register.py:/opt/xiaozhi-esp32-server/plugins_func/register.py
-      # 记忆模块（新增）
+      # Memory Module (Hot Reload)
       - ./memory/mem_local_short/mem_local_short.py:/opt/xiaozhi-esp32-server/core/providers/memory/mem_local_short/mem_local_short.py
-      # 模型文件
-      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
-      # 新增：Intent识别模块
+      # Intent Recognition Module (Hot Reload)
       - ./intent/intent_llm/intent_llm.py:/opt/xiaozhi-esp32-server/core/providers/intent/intent_llm/intent_llm.py
+      # Model Files
+      - ./models/SenseVoiceSmall/model.pt:/opt/xiaozhi-esp32-server/models/SenseVoiceSmall/model.pt
     deploy:
       resources:
         limits:
@@ -48,7 +52,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Web模块 - Vue前端 + Java后端
+  # Web Module - Vue Frontend + Java Backend
   xiaozhi-esp32-server-web:
     image: xiaozhi-esp32-server:web_custom
     container_name: xiaozhi-esp32-server-web
@@ -61,7 +65,7 @@ services:
       xiaozhi-esp32-server-redis:
         condition: service_healthy
     ports:
-      # Web管理控制台
+      # Web Management Console
       - "8002:8002"
     environment:
       - TZ=Asia/Shanghai
@@ -72,8 +76,9 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=
       - SPRING_DATA_REDIS_PORT=6379
     volumes:
-      # 上传文件目录
+      # Upload Files
       - ./uploadfile:/uploadfile
+      # Docker Configuration (Hot Reload)
       - ./docker-config/start.sh:/start.sh:ro
       - ./docker-config/nginx.conf:/etc/nginx/nginx.conf:ro
     deploy:
@@ -90,7 +95,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # 数据库模块 - MySQL
+  # Database Module - MySQL
   xiaozhi-esp32-server-db:
     image: mysql:latest
     container_name: xiaozhi-esp32-server-db
@@ -131,7 +136,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Redis模块 - 缓存服务
+  # Redis Module - Cache Service
   xiaozhi-esp32-server-redis:
     image: redis:latest
     container_name: xiaozhi-esp32-server-redis
@@ -171,4 +176,3 @@ services:
 networks:
   default:
     driver: bridge
-
