@@ -64,6 +64,8 @@ class IntentProvider(IntentProviderBase):
             "- 示例：用户说'温度22度' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\"}}}\n\n"
             "- 示例：用户说'负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"load_rate\": \"90\"}}}\n"
             "- 示例：用户说'温度22度，负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\", \"load_rate\": \"90\"}}}\n"
+            "- 示例：用户说'温度零度' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"0\"}}}\n"
+            "- 示例：用户说'温度零下十度' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"-10\"}}}\n"
 
             "【重要规则】以下类型的查询请直接返回result_for_context，无需调用函数：\n"
             "- 询问当前时间（如：现在几点、当前时间、查询时间等）\n"
@@ -91,8 +93,8 @@ class IntentProvider(IntentProviderBase):
             '返回: {"function_call": {"name": "result_for_context"}}\n'
             "```\n"
             "```\n"
-            "用户: 设置温度-10度，负载率20%\n"
-            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"temperature": "-10", "load_rate": "20"}}}\n'
+            "用户: 设置温度-15度，负载率20%\n"
+            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"temperature": "-15", "load_rate": "20"}}}\n'
             "```\n"
             "```\n"
             "用户: 可以\n"
