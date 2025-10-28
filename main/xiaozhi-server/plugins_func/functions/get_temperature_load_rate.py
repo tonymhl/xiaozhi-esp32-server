@@ -134,6 +134,25 @@ def validate_load_rate(load_rate_value):
     return True, None
 
 
+def format_temperature_for_tts(temp_str):
+    """将温度字符串中的负号转换为中文'负'字，便于TTS正确读出
+    
+    Args:
+        temp_str: 温度字符串，如"-15℃"、"22℃"
+    
+    Returns:
+        转换后的字符串，如"负15℃"、"22℃"
+    
+    Examples:
+        "-15℃" -> "负15℃"
+        "-10.5℃" -> "负10.5℃"
+        "22℃" -> "22℃"
+    """
+    if temp_str and temp_str.startswith("-"):
+        return "负" + temp_str[1:]
+    return temp_str
+
+
 def get_api_base_url(conn):
     """从配置中获取API基础URL"""
     try:
@@ -618,7 +637,9 @@ def get_temperature_load_rate(
                     # 使用暖通建议的专业话术，根据实际参数动态构建消息
                     params_parts = []
                     if state.get("temperature"):
-                        params_parts.append(f"温度：{state['temperature']}")
+                        # 将负号转换为中文"负"字，便于TTS正确读出
+                        temp_for_tts = format_temperature_for_tts(state['temperature'])
+                        params_parts.append(f"温度：{temp_for_tts}")
                     if state.get("load_rate"):
                         params_parts.append(f"负载：{state['load_rate']}")
                     
@@ -722,7 +743,9 @@ def get_temperature_load_rate(
             # 构建工况参数信息（只包含非None的参数）
             params_parts = []
             if state.get("temperature"):
-                params_parts.append(f"温度{state['temperature']}")
+                # 将负号转换为中文"负"字，便于TTS正确读出
+                temp_for_tts = format_temperature_for_tts(state['temperature'])
+                params_parts.append(f"温度{temp_for_tts}")
             if state.get("load_rate"):
                 params_parts.append(f"负载{state['load_rate']}")
             
@@ -883,7 +906,9 @@ def get_temperature_load_rate(
                 # 构建工况参数信息（只包含非None的参数）
                 params_parts = []
                 if state.get("temperature"):
-                    params_parts.append(f"温度{state['temperature']}")
+                    # 将负号转换为中文"负"字，便于TTS正确读出
+                    temp_for_tts = format_temperature_for_tts(state['temperature'])
+                    params_parts.append(f"温度{temp_for_tts}")
                 if state.get("load_rate"):
                     params_parts.append(f"负载{state['load_rate']}")
                 
