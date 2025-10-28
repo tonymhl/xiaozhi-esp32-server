@@ -525,6 +525,32 @@ def get_temperature_load_rate(
                 response="已取消温度和负载率设置",
             )
         
+        # ==================== 重要：检测参数重新输入，必须在参数收集前清除旧参数 ====================
+        # 如果用户提供了新参数（temperature或load_rate），且不是确认操作（confirm/cancel/use_preset）
+        # 且当前处于确认阶段，则必须先清除所有旧参数，然后重新收集
+        user_provided_new_params = (temperature is not None) or (load_rate is not None)
+        is_confirm_operation = confirm or cancel or use_preset
+        
+        if user_provided_new_params and not is_confirm_operation:
+            # 如果在确认阶段收到新参数，必须清除所有旧参数
+            if state["stage"] in ["waiting_first_confirm", "waiting_second_confirm"]:
+                logger.bind(tag=TAG).info("=" * 80)
+                logger.bind(tag=TAG).info(f"【参数重新输入】检测到用户在{state['stage']}状态下重新输入参数")
+                logger.bind(tag=TAG).info(f"【参数清除】清除旧参数: temperature={state.get('temperature')}, load_rate={state.get('load_rate')}")
+                logger.bind(tag=TAG).info("【参数清除】准备重新收集参数")
+                logger.bind(tag=TAG).info("=" * 80)
+                
+                # 立即清除所有旧参数（在收集新参数之前）
+                state["temperature"] = None
+                state["temperature_raw"] = None
+                state["load_rate"] = None
+                state["load_rate_raw"] = None
+                state["stage"] = "collecting"
+                state["api1_response"] = None
+                state["confirm_stage"] = 0
+                
+                logger.bind(tag=TAG).info("【参数清除】✅ 旧参数已清除，现在开始收集新参数")
+        
         # ==================== 阶段：参数收集 ====================
         # 更新温度
         if temperature is not None:
@@ -542,7 +568,7 @@ def get_temperature_load_rate(
                     )
                 state["temperature_raw"] = temp_value
                 state["temperature"] = temp_formatted
-                logger.bind(tag=TAG).info(f"【参数收集】✅ 温度已更新: {temp_formatted} (原始值: {temp_value})")
+                logger.bind(tag=TAG).info(f"【参数收集】✅ 温度已设置: {temp_formatted} (原始值: {temp_value})")
             else:
                 logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析温度: {temperature}")
         
@@ -562,25 +588,13 @@ def get_temperature_load_rate(
                     )
                 state["load_rate_raw"] = load_rate_value
                 state["load_rate"] = load_rate_formatted
-                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已更新: {load_rate_formatted} (原始值: {load_rate_value})")
+                logger.bind(tag=TAG).info(f"【参数收集】✅ 负载率已设置: {load_rate_formatted} (原始值: {load_rate_value})")
             else:
                 logger.bind(tag=TAG).warning(f"【参数收集】❌ 无法解析负载率: {load_rate}")
         
         # 检查当前状态
         has_temperature = state["temperature"] is not None
         has_load_rate = state["load_rate"] is not None
-        
-        # ==================== 重要：检测参数重新输入的情况 ====================
-        # 如果用户在等待确认状态下提供了新参数（而不是confirm/cancel），应该重置状态
-        if state["stage"] in ["waiting_first_confirm", "waiting_second_confirm"]:
-            # 检查用户是否提供了新的参数输入（而不是确认/取消操作）
-            if (has_temperature or has_load_rate) and not confirm and not cancel and not use_preset:
-                logger.bind(tag=TAG).info("=" * 80)
-                logger.bind(tag=TAG).info(f"【参数重新输入】检测到用户在{state['stage']}状态下重新输入参数")
-                logger.bind(tag=TAG).info("【参数重新输入】重置状态为collecing，重新开始参数确认流程")
-                logger.bind(tag=TAG).info("=" * 80)
-                # 重置为参数收集状态，让流程重新走一遍确认流程
-                state["stage"] = "collecting"
         
         # ==================== 阶段：第二次确认（AI节能优化确认） ====================
         if confirm:

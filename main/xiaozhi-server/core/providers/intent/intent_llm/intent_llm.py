@@ -91,8 +91,8 @@ class IntentProvider(IntentProviderBase):
             '返回: {"function_call": {"name": "result_for_context"}}\n'
             "```\n"
             "```\n"
-            "用户: 设置温度22度，负载率90%\n"
-            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"temperature": "22", "load_rate": "90"}}}\n'
+            "用户: 设置温度-10度，负载率20%\n"
+            '返回: {"function_call": {"name": "get_temperature_load_rate", "arguments": {"temperature": "-10", "load_rate": "20"}}}\n'
             "```\n"
             "```\n"
             "用户: 可以\n"
