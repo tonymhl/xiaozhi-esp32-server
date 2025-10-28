@@ -128,8 +128,8 @@ function Build-DockerImages {
 function Get-BaseImages {
     Print-Title "拉取基础镜像"
 
-    Print-Info "拉取MySQL镜像..."
-    docker pull mysql:latest
+    Print-Info "拉取MySQL 8.0镜像（稳定版本）..."
+    docker pull mysql:8.0
 
     Print-Info "拉取Redis镜像..."
     docker pull redis:latest
@@ -149,8 +149,8 @@ function Export-DockerImages {
     Print-Info "导出xiaozhi-esp32-server-web镜像..."
     docker save xiaozhi-esp32-server:web_custom -o (Join-Path $imagesDir "web.tar")
 
-    Print-Info "导出MySQL镜像..."
-    docker save mysql:latest -o (Join-Path $imagesDir "mysql.tar")
+    Print-Info "导出MySQL 8.0镜像..."
+    docker save mysql:8.0 -o (Join-Path $imagesDir "mysql.tar")
 
     Print-Info "导出Redis镜像..."
     docker save redis:latest -o (Join-Path $imagesDir "redis.tar")
@@ -336,10 +336,10 @@ function New-DeploymentManifest {
         "   大小: $("{0:N2}" -f $webSize) GB"
         "   说明: Vue前端 + Java后端管理控制台"
         ""
-        "镜像3: mysql:latest"
+        "镜像3: mysql:8.0"
         "   文件: images/mysql.tar"
         "   大小: $("{0:N2}" -f $mysqlSize) GB"
-        "   说明: MySQL数据库"
+        "   说明: MySQL 8.0数据库（稳定版本）"
         ""
         "镜像4: redis:latest"
         "   文件: images/redis.tar"

@@ -97,7 +97,7 @@ services:
 
   # Database Module - MySQL
   xiaozhi-esp32-server-db:
-    image: mysql:latest
+    image: mysql:8.0
     container_name: xiaozhi-esp32-server-db
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
@@ -115,13 +115,12 @@ services:
       - TZ=Asia/Shanghai
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=xiaozhi_esp32_server
-      - MYSQL_INITDB_ARGS="--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+      - MYSQL_INITDB_ARGS=--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --max_connections=1000
       - --innodb_buffer_pool_size=512M
-      - --innodb_log_file_size=128M
     deploy:
       resources:
         limits:
