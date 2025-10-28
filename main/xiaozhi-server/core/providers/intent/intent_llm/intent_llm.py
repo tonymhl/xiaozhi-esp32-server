@@ -170,7 +170,7 @@ class IntentProvider(IntentProviderBase):
             # 混合意图应完全交给LLM处理，避免误判
             has_number = bool(re.search(r'\d+', text))  # 包含数字
             has_param_keywords = any(word in text for word in ["温度", "负载率", "负载", "设置", "调整", "度", "℃", "%"])
-            has_confirm_word = any(word in text for word in ["确认", "好的", "可以", "是的", "启动", "执行", "授权", "同意", "OK", "ok", "没错", "没问题", "没毛病","行"])
+            has_confirm_word = any(word in text for word in ["确认", "确定", "好的", "可以", "是的", "启动", "执行", "授权", "同意", "OK", "ok", "没错", "没问题", "没毛病","行"])
             has_cancel_word = any(word in text for word in ["取消", "不要", "算了", "拒绝", "不", "错了"])
             has_preset_word = any(word in text for word in ["推荐", "预设", "默认", "帮我设置", "随便"])
             
