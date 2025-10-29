@@ -290,7 +290,7 @@
             <div class="connection-controls">
                 <input type="text" id="otaUrl" value="http://127.0.0.1:8002/xiaozhi/ota/"
                     placeholder="OTA服务器地址，如：http://127.0.0.1:8002/xiaozhi/ota/" />
-                <input type="text" id="serverUrl" value="" readonly disabled placeholder="点击连接按钮后，自动从OTA接口获取" />
+                <input type="text" id="serverUrl" value="" placeholder="手动填写WebSocket地址，如：ws://127.0.0.1:8000/xiaozhi/v1/（可选，留空则从OTA自动获取）" />
                 <button id="connectButton">连接</button>
             </div>
         </div>
@@ -937,26 +937,43 @@
 
         // 连接WebSocket服务器
         async function connectToServer() {
-            const url = serverUrlInput.value.trim();
+            const manualUrl = serverUrlInput.value.trim();
             const config = getConfig();
-            // 先检查OTA状态
-            log('正在检查OTA状态...', 'info');
             const otaUrl = document.getElementById('otaUrl').value.trim();
             localStorage.setItem('otaUrl', otaUrl);
-            localStorage.setItem('wsUrl', url);
+            localStorage.setItem('wsUrl', manualUrl);
 
             try {
-                const ws = await webSocketConnect(otaUrl, config)
-                if (ws === undefined) {
-                    return
+                let websocketUrl;
+                
+                // 如果用户手动填写了WebSocket地址，直接使用
+                if (manualUrl && (manualUrl.startsWith('ws://') || manualUrl.startsWith('wss://'))) {
+                    log('使用手动填写的WebSocket地址...', 'info');
+                    websocketUrl = manualUrl;
+                    
+                    // 添加认证参数
+                    let connUrl = new URL(websocketUrl);
+                    connUrl.searchParams.append('device-id', config.deviceId);
+                    connUrl.searchParams.append('client-id', config.clientId);
+                    websocketUrl = connUrl.toString();
+                    
+                    log(`正在连接: ${websocketUrl}`, 'info');
+                    websocket = new WebSocket(websocketUrl);
+                } else {
+                    // 否则从OTA自动获取
+                    log('正在从OTA接口获取WebSocket地址...', 'info');
+                    const ws = await webSocketConnect(otaUrl, config);
+                    if (ws === undefined) {
+                        return;
+                    }
+                    websocket = ws;
                 }
-                websocket = ws
 
                 // 设置接收二进制数据的类型为ArrayBuffer
                 websocket.binaryType = 'arraybuffer';
 
                 websocket.onopen = async () => {
-                    log(`已连接到服务器: ${url}`, 'success');
+                    log(`已连接到服务器: ${websocketUrl || '从OTA获取的地址'}`, 'success');
                     connectionStatus.textContent = 'ws已连接';
                     connectionStatus.style.color = 'green';
 
