@@ -61,6 +61,7 @@ class IntentProvider(IntentProviderBase):
             "- 或者用户说【确认】、【好的】、【可以】、【是的】、【启动】、【执行】、【授权】、【同意】、【OK】、【ok】、【没错】、【没问题】、【没毛病】、等肯定词\n"
             "- 必须优先调用 get_temperature_load_rate 函数！\n"
             "- 示例：用户说'确认' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"confirm\": true}}}\n"
+            "- 示例：用户说'取消' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"cancel\": true}}}\n"
             "- 示例：用户说'温度22度' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\"}}}\n\n"
             "- 示例：用户说'负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"load_rate\": \"90\"}}}\n"
             "- 示例：用户说'温度22度，负载率90%' → 返回 {\"function_call\": {\"name\": \"get_temperature_load_rate\", \"arguments\": {\"temperature\": \"22\", \"load_rate\": \"90\"}}}\n"
