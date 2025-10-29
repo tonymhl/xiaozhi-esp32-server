@@ -231,6 +231,7 @@ vi /root/xiaozhi-offline-deployment-*/memory/mem_local_short/mem_local_short.py
 # 2. 重启容器使更改生效
 cd /root/xiaozhi-offline-deployment-*/
 docker-compose -f docker-compose-offline.yml restart xiaozhi-esp32-server
+docker-compose -f docker-compose-offline.yml up -d --force-recreate
 
 # 3. 验证更改
 docker-compose -f docker-compose-offline.yml logs --tail=200 -f xiaozhi-esp32-server
