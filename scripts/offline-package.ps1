@@ -94,7 +94,7 @@ function New-PackageDirectory {
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "data") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "mysql\data") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "uploadfile") -Force | Out-Null
-    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "models\SenseVoiceSmall") -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "models") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "redis\data") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "memory\mem_local_short") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $global:PackageDir "intent\intent_llm") -Force | Out-Null

@@ -163,7 +163,7 @@ create_directories() {
 
     cd "$DEPLOY_DIR"
 
-    mkdir -p data mysql/data uploadfile models/SenseVoiceSmall plugins_func/functions redis/data memory/mem_local_short intent/intent_llm docker-config
+    mkdir -p data mysql/data uploadfile models plugins_func/functions redis/data memory/mem_local_short intent/intent_llm docker-config
 
     chmod -R 755 data uploadfile models plugins_func memory intent docker-config
     chmod -R 777 mysql/data redis/data
@@ -188,11 +188,13 @@ check_configuration() {
         print_warning "未找到 data/config.yaml，将使用默认配置"
     fi
 
-    if [ -f "models/SenseVoiceSmall/model.pt" ]; then
-        print_success "找到模型文件 model.pt"
+    if [ -d "models" ] && [ "$(ls -A models 2>/dev/null)" ]; then
+        print_success "找到模型目录"
+        print_info "已检测到以下模型："
+        ls -1 models/ | head -5
     else
         print_warning "未找到模型文件，某些功能可能无法使用"
-        print_info "请将模型文件放置在: models/SenseVoiceSmall/model.pt"
+        print_info "请将模型文件放置在: models/ 目录"
     fi
 }
 
