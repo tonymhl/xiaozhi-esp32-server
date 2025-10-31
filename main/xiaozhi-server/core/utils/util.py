@@ -105,16 +105,30 @@ def get_ip_info(ip_addr, logger):
         if cached_ip_info is not None:
             return cached_ip_info
 
+        # 检查是否禁用外网IP查询（通过环境变量控制）
+        disable_ip_query = os.getenv("DISABLE_IP_QUERY", "false").lower() == "true"
+        if disable_ip_query:
+            logger.bind(tag=TAG).debug("IP查询已禁用(DISABLE_IP_QUERY=true)，跳过外网请求")
+            return {}
+
         # 缓存未命中，调用API
         if is_private_ip(ip_addr):
             ip_addr = ""
+        
         url = f"https://whois.pconline.com.cn/ipJson.jsp?json=true&ip={ip_addr}"
-        resp = requests.get(url).json()
+        # 设置短超时时间(3秒)，避免在内网环境下长时间等待
+        resp = requests.get(url, timeout=3).json()
         ip_info = {"city": resp.get("city")}
 
         # 存入缓存
         cache_manager.set(CacheType.IP_INFO, ip_addr, ip_info)
         return ip_info
+    except requests.exceptions.Timeout:
+        logger.bind(tag=TAG).warning(f"IP查询超时，可能处于内网环境。可设置环境变量 DISABLE_IP_QUERY=true 禁用此功能")
+        return {}
+    except requests.exceptions.RequestException as e:
+        logger.bind(tag=TAG).warning(f"IP查询失败(网络错误): {e}。可设置环境变量 DISABLE_IP_QUERY=true 禁用此功能")
+        return {}
     except Exception as e:
         logger.bind(tag=TAG).error(f"Error getting client ip info: {e}")
         return {}
