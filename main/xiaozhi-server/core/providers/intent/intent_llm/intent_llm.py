@@ -295,7 +295,7 @@ class IntentProvider(IntentProviderBase):
         # 记录LLM调用完成时间
         llm_time = time.time() - llm_start_time
         logger.bind(tag=TAG).debug(
-            f"LLM意图识别完成, 模型: {model_info}, 调用耗时: {llm_time:.4f}秒"
+            f"外挂的大模型意图识别完成, 模型: {model_info}, 调用耗时: {llm_time:.4f}秒"
         )
 
         # 记录后处理开始时间
@@ -337,8 +337,10 @@ class IntentProvider(IntentProviderBase):
                 # 处理不同类型的意图
                 if function_name == "result_for_context":
                     # 处理基础信息查询，直接从context构建结果
-                    logger.bind(tag=TAG).info("检测到result_for_context意图，将使用上下文信息直接回答")
-                    
+                    logger.bind(tag=TAG).info(
+                        "检测到result_for_context意图，将使用上下文信息直接回答"
+                    )
+
                 elif function_name == "continue_chat":
                     # 处理普通对话
                     # 保留非工具相关的消息
@@ -348,7 +350,7 @@ class IntentProvider(IntentProviderBase):
                         if msg.role not in ["tool", "function"]
                     ]
                     conn.dialogue.dialogue = clean_history
-                    
+
                 else:
                     # 处理函数调用
                     logger.bind(tag=TAG).info(f"检测到函数调用意图: {function_name}")
