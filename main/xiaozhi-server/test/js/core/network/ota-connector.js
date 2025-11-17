@@ -8,6 +8,26 @@ export async function webSocketConnect(otaUrl, config) {
         return;
     }
 
+    // 检查用户是否手动输入了WebSocket地址
+    const manualWsUrl = document.getElementById('serverUrl').value.trim();
+    
+    // 如果用户手动输入了有效的WebSocket地址，直接使用
+    if (manualWsUrl && validateWsUrl(manualWsUrl)) {
+        log(`使用手动输入的WebSocket地址: ${manualWsUrl}`, 'info');
+        // 仍然尝试连接OTA以更新状态，但不阻塞连接
+        sendOTA(otaUrl, config).then(result => {
+            if (result) {
+                log('OTA连接成功', 'success');
+            } else {
+                log('OTA连接失败，但将使用手动输入的WebSocket地址', 'warning');
+            }
+        });
+        return new WebSocket(manualWsUrl);
+    }
+
+    // 如果没有手动输入，从OTA自动获取
+    log('从OTA服务器获取WebSocket地址...', 'info');
+    
     // 发送OTA请求并获取返回的websocket信息
     const otaResult = await sendOTA(otaUrl, config);
     if (!otaResult) {

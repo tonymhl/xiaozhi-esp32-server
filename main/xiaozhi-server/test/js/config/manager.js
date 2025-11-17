@@ -20,6 +20,7 @@ export function loadConfig() {
     const clientIdInput = document.getElementById('clientId');
     const tokenInput = document.getElementById('token');
     const otaUrlInput = document.getElementById('otaUrl');
+    const serverUrlInput = document.getElementById('serverUrl');
 
     // 从localStorage加载MAC地址，如果没有则生成新的
     let savedMac = localStorage.getItem('xz_tester_deviceMac');
@@ -48,6 +49,11 @@ export function loadConfig() {
     const savedOtaUrl = localStorage.getItem('xz_tester_otaUrl');
     if (savedOtaUrl) {
         otaUrlInput.value = savedOtaUrl;
+    }
+
+    const savedWsUrl = localStorage.getItem('xz_tester_wsUrl');
+    if (savedWsUrl) {
+        serverUrlInput.value = savedWsUrl;
     }
 }
 
