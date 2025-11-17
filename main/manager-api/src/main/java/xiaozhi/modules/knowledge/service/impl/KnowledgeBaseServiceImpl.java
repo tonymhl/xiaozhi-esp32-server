@@ -315,7 +315,7 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
         // API删除成功后再删除本地记录
         if (apiDeleteSuccess) {
             log.info("开始删除ai_agent_plugin_mapping表中与知识库ID '{}' 相关的映射记录", entity.getId());
-            
+
             // 先删除相关的插件映射记录
             knowledgeBaseDao.deletePluginMappingByKnowledgeBaseId(entity.getId());
             log.info("插件映射记录删除完成");
@@ -354,29 +354,27 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
     }
 
     @Override
-    public Map<String, Object> getDefaultRAGConfig() {
-        // 获取默认RAG模型配置
-        QueryWrapper<ModelConfigEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("model_type", Constant.RAG_CONFIG_TYPE)
-                .eq("is_default", 1)
-                .eq("is_enabled", 1);
-
-        List<ModelConfigEntity> modelConfigs = modelConfigDao.selectList(queryWrapper);
-        if (modelConfigs == null || modelConfigs.isEmpty()) {
-            throw new RenException(ErrorCode.RAG_DEFAULT_CONFIG_NOT_FOUND);
+    public Map<String, Object> getRAGConfigByDatasetId(String datasetId) {
+        if (StringUtils.isBlank(datasetId)) {
+            throw new RenException(ErrorCode.RAG_DATASET_ID_NOT_NULL);
         }
 
-        ModelConfigEntity defaultConfig = modelConfigs.get(0);
-        if (defaultConfig.getConfigJson() == null) {
+        // 根据datasetId查询知识库信息
+        KnowledgeBaseDTO knowledgeBase = getByDatasetId(datasetId);
+        if (knowledgeBase == null) {
+            log.warn("未找到datasetId为{}的知识库", datasetId);
+            throw new RenException(ErrorCode.Knowledge_Base_RECORD_NOT_EXISTS);
+        }
+
+        // 如果知识库指定了ragModelId，使用该配置
+        String ragModelId = knowledgeBase.getRagModelId();
+        if (StringUtils.isBlank(ragModelId)) {
+            log.warn("知识库datasetId为{}未配置ragModelId", datasetId);
             throw new RenException(ErrorCode.RAG_CONFIG_NOT_FOUND);
         }
 
-        Map<String, Object> config = defaultConfig.getConfigJson();
-
-        // 验证必要的配置参数
-        validateRagConfig(config);
-
-        return config;
+        // 获取并返回RAG配置
+        return getRAGConfig(ragModelId);
     }
 
     @Override
@@ -405,7 +403,7 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
      */
     private void validateRagConfig(Map<String, Object> config) {
         if (config == null) {
-            throw new RenException(ErrorCode.RAG_CONFIG_NOT_FOUND, "RAG配置为空，请检查配置");
+            throw new RenException(ErrorCode.RAG_CONFIG_NOT_FOUND);
         }
 
         // 从配置中提取必要的参数
@@ -512,8 +510,7 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                     }
                 } else {
                     // 如果响应码不为0，说明API调用失败
-                    String errorMessage = "RAGFlow API调用失败，响应码: " + code + ", 消息: "
-                            + (message != null ? message : "未知错误");
+                    String errorMessage = code + (message != null ? message : "null");
                     log.error(errorMessage);
                     throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
                 }
@@ -522,19 +519,19 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                 log.debug("完整响应内容: {}", responseBody);
             } catch (IOException e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应时发生IO异常";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
-                throw new RenException(ErrorCode.RAG_API_ERROR, "RAGFlow API响应解析失败: " + errorMessage);
+                throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
             } catch (Exception e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应失败";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
                 // 如果解析失败，但响应体不为空，尝试直接使用响应体作为错误信息
                 String finalErrorMessage = responseBody;
                 if (e.getMessage() != null) {
-                    finalErrorMessage += "，解析错误: " + errorMessage;
+                    finalErrorMessage += errorMessage;
                 }
                 throw new RenException(ErrorCode.RAG_API_ERROR, finalErrorMessage);
             }
@@ -542,7 +539,7 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
 
         if (StringUtils.isBlank(datasetId)) {
             log.error("无法从RAGFlow API响应中获取datasetId，响应内容: {}", responseBody);
-            throw new RenException(ErrorCode.RAG_API_ERROR, "RAGFlow API响应中未包含datasetId");
+            throw new RenException(ErrorCode.RAG_DATASET_ID_NOT_NULL);
         }
         log.info("RAGFlow数据集创建成功，datasetId: {}", datasetId);
 
@@ -609,26 +606,25 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                 String message = (String) responseMap.get("message");
 
                 if (code != null && code != 0) {
-                    String errorMessage = "RAGFlow API调用失败，响应码: " + code + ", 消息: "
-                            + (message != null ? message : "未知错误");
+                    String errorMessage = code + (message != null ? message : "null");
                     log.error(errorMessage);
                     throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
                 }
             } catch (IOException e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应时发生IO异常";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
-                throw new RenException(ErrorCode.RAG_API_ERROR, "RAGFlow API响应解析失败: " + errorMessage);
+                throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
             } catch (Exception e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应失败";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
                 // 如果解析失败，但响应体不为空，尝试直接使用响应体作为错误信息
                 String finalErrorMessage = responseBody;
                 if (e.getMessage() != null) {
-                    finalErrorMessage += "，解析错误: " + errorMessage;
+                    finalErrorMessage += errorMessage;
                 }
                 throw new RenException(ErrorCode.RAG_API_ERROR, finalErrorMessage);
             }
@@ -679,7 +675,7 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
         log.debug("RAGFlow API响应内容: {}", response.getBody());
 
         if (!response.getStatusCode().is2xxSuccessful()) {
-            String errorMessage = response.getStatusCode() + ", 响应内容: " + response.getBody();
+            String errorMessage = response.getStatusCode() + response.getBody();
             log.error(errorMessage);
             throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
         }
@@ -693,26 +689,25 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
                 String message = (String) responseMap.get("message");
 
                 if (code != null && code != 0) {
-                    String errorMessage = "RAGFlow API调用失败，响应码: " + code + ", 消息: "
-                            + (message != null ? message : "未知错误");
+                    String errorMessage = code + (message != null ? message : "null");
                     log.error(errorMessage);
                     throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
                 }
             } catch (IOException e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应时发生IO异常";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
-                throw new RenException(ErrorCode.RAG_API_ERROR, "RAGFlow API响应解析失败: " + errorMessage);
+                throw new RenException(ErrorCode.RAG_API_ERROR, errorMessage);
             } catch (Exception e) {
                 // 构建详细的错误信息，包含异常类型和消息
-                String baseErrorMessage = e.getClass().getSimpleName() + " - 解析RAGFlow API响应失败";
+                String baseErrorMessage = e.getClass().getSimpleName();
                 String errorMessage = baseErrorMessage + (e.getMessage() != null ? ": " + e.getMessage() : "");
                 log.error(errorMessage, e);
                 // 如果解析失败，但响应体不为空，尝试直接使用响应体作为错误信息
                 String finalErrorMessage = responseBody;
                 if (e.getMessage() != null) {
-                    finalErrorMessage += "，解析错误: " + errorMessage;
+                    finalErrorMessage += errorMessage;
                 }
                 throw new RenException(ErrorCode.RAG_API_ERROR, finalErrorMessage);
             }
@@ -726,12 +721,11 @@ public class KnowledgeBaseServiceImpl extends BaseServiceImpl<KnowledgeBaseDao, 
      * 获取RAG配置并验证
      */
     private Map<String, Object> getValidatedRAGConfig(String ragModelId) {
-        Map<String, Object> ragConfig;
-        if (StringUtils.isNotBlank(ragModelId)) {
-            ragConfig = getRAGConfig(ragModelId);
-        } else {
-            ragConfig = getDefaultRAGConfig();
+        if (StringUtils.isBlank(ragModelId)) {
+            throw new RenException(ErrorCode.RAG_MODEL_ID_NOT_NULL);
         }
+
+        Map<String, Object> ragConfig = getRAGConfig(ragModelId);
 
         // 验证RAG配置参数
         validateRagConfig(ragConfig);
