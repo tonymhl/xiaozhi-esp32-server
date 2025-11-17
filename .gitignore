@@ -183,5 +183,5 @@ uploadfile
 !main/manager-mobile/**/env/
 !main/manager-mobile/**/.env*
 !main/manager-mobile/**/*.json
-main/manager-web/package-lock.json
+!main/xiaozhi-server/**/*.json
 *.gz
