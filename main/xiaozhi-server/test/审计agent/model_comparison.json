@@ -1,0 +1,1902 @@
+{
+  "timestamp": "2025-11-18T19:19:55.990165",
+  "models": [
+    "deepseek",
+    "zhipu"
+  ],
+  "results": {
+    "deepseek": {
+      "meta": {
+        "test_time": "2025-11-18T19:09:50.605300",
+        "model": "deepseek-ai/DeepSeek-V3",
+        "temperature": 0.3,
+        "rounds": 3,
+        "samples_per_round": 25
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "overall_metrics": {
+            "accuracy": 0.96,
+            "correct_count": 24,
+            "total_count": 25,
+            "no_prediction_count": 0,
+            "macro_precision": 0.9782608695652174,
+            "macro_recall": 0.8333333333333333,
+            "macro_f1": 0.8888888888888888,
+            "weighted_precision": 0.9617391304347827,
+            "weighted_recall": 0.96,
+            "weighted_f1": 0.9564444444444444,
+            "avg_response_time": 0.7089881560002687,
+            "min_response_time": 0.5887814000016078,
+            "max_response_time": 1.8549115000059828
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.96,
+            "no_tool_call_rate": 0.0,
+            "multiple_tool_call_rate": 0.04,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 1.0,
+            "single_tool_call_accuracy": 1.0,
+            "tool_call_distribution": {
+              "regulation_search": 23,
+              "case_retrieval": 3
+            },
+            "avg_tools_per_query": 1.04,
+            "response_time_p50": 0.6491119999991497,
+            "response_time_p95": 1.5807755500034546,
+            "response_time_p99": 1.8549115000059828,
+            "total_samples": 25,
+            "successful_calls": 24,
+            "no_tool_calls": 0,
+            "multiple_calls": 1,
+            "hallucinated_calls": 0,
+            "valid_calls": 25,
+            "single_calls_total": 24,
+            "single_calls_correct": 24
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 0.9565217391304348,
+              "recall": 1.0,
+              "f1_score": 0.9777777777777777,
+              "support": 22,
+              "tp": 22,
+              "fp": 1,
+              "fn": 0,
+              "tn": 2
+            },
+            "实例类": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1_score": 0.8,
+              "support": 3,
+              "tp": 2,
+              "fp": 0,
+              "fn": 1,
+              "tn": 22
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 22,
+              "实例类": 0,
+              "null": 0
+            },
+            "实例类": {
+              "制度类": 1,
+              "实例类": 2,
+              "null": 0
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 1.8549115000059828
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.7662288999999873
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6090526999905705
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6136479999986477
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 0.6912138000043342
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "regulation_search",
+                "case_retrieval"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": false,
+              "response_time": 0.9411249999975553
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6050017999950796
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6598846000124468
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.7350236000056611
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6067539999930887
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5887814000016078
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6138228999916464
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6720197000104235
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6541627999977209
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6628675999963889
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6653763000067556
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6125935000018217
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6491119999991497
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6353212999965763
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6388773000071524
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6549099999974715
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6151434000057634
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6307749999978114
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6176073999959044
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 0.7304893999971682
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "overall_metrics": {
+            "accuracy": 0.92,
+            "correct_count": 23,
+            "total_count": 25,
+            "no_prediction_count": 1,
+            "macro_precision": 0.9772727272727273,
+            "macro_recall": 0.8106060606060606,
+            "macro_f1": 0.8772727272727273,
+            "weighted_precision": 0.96,
+            "weighted_recall": 0.92,
+            "weighted_f1": 0.9359999999999999,
+            "avg_response_time": 0.7758528920001118,
+            "min_response_time": 0.5795752999983961,
+            "max_response_time": 3.2957735999953
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.92,
+            "no_tool_call_rate": 0.04,
+            "multiple_tool_call_rate": 0.08,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 0.96,
+            "single_tool_call_accuracy": 0.9545454545454546,
+            "tool_call_distribution": {
+              "regulation_search": 24,
+              "case_retrieval": 2
+            },
+            "avg_tools_per_query": 1.04,
+            "response_time_p50": 0.6271414999937406,
+            "response_time_p95": 2.6489782499993453,
+            "response_time_p99": 3.2957735999953,
+            "total_samples": 25,
+            "successful_calls": 23,
+            "no_tool_calls": 1,
+            "multiple_calls": 2,
+            "hallucinated_calls": 0,
+            "valid_calls": 24,
+            "single_calls_total": 22,
+            "single_calls_correct": 21
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 0.9545454545454546,
+              "recall": 0.9545454545454546,
+              "f1_score": 0.9545454545454546,
+              "support": 22,
+              "tp": 21,
+              "fp": 1,
+              "fn": 1,
+              "tn": 2
+            },
+            "实例类": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1_score": 0.8,
+              "support": 3,
+              "tp": 2,
+              "fp": 0,
+              "fn": 1,
+              "tn": 22
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 21,
+              "实例类": 0,
+              "null": 1
+            },
+            "实例类": {
+              "制度类": 1,
+              "实例类": 2,
+              "null": 0
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6353723999927752
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.7681986000097822
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.603162200000952
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6138081999961287
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval",
+                "regulation_search"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 1.0117382000025827
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": false,
+              "response_time": 0.5987236000073608
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5849214999907417
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6529387000045972
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6816541000007419
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6474778000119841
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5795752999983961
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6049869999988005
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.669122299994342
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6705528000020422
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6426935000054073
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6770271999994293
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.618871600003331
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6186289000033867
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.60629899999185
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 3.2957735999953
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.626806200001738
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6094307999883313
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6271414999937406
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6116282000002684
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval",
+                "regulation_search"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 1.1397891000087839
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "overall_metrics": {
+            "accuracy": 0.96,
+            "correct_count": 24,
+            "total_count": 25,
+            "no_prediction_count": 0,
+            "macro_precision": 0.9782608695652174,
+            "macro_recall": 0.8333333333333333,
+            "macro_f1": 0.8888888888888888,
+            "weighted_precision": 0.9617391304347827,
+            "weighted_recall": 0.96,
+            "weighted_f1": 0.9564444444444444,
+            "avg_response_time": 0.6670538240007591,
+            "min_response_time": 0.5797665999998571,
+            "max_response_time": 1.1465777000121307
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.96,
+            "no_tool_call_rate": 0.0,
+            "multiple_tool_call_rate": 0.08,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 1.0,
+            "single_tool_call_accuracy": 0.9565217391304348,
+            "tool_call_distribution": {
+              "regulation_search": 25,
+              "case_retrieval": 2
+            },
+            "avg_tools_per_query": 1.08,
+            "response_time_p50": 0.623274700003094,
+            "response_time_p95": 1.1068561100080843,
+            "response_time_p99": 1.1465777000121307,
+            "total_samples": 25,
+            "successful_calls": 24,
+            "no_tool_calls": 0,
+            "multiple_calls": 2,
+            "hallucinated_calls": 0,
+            "valid_calls": 25,
+            "single_calls_total": 23,
+            "single_calls_correct": 22
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 0.9565217391304348,
+              "recall": 1.0,
+              "f1_score": 0.9777777777777777,
+              "support": 22,
+              "tp": 22,
+              "fp": 1,
+              "fn": 0,
+              "tn": 2
+            },
+            "实例类": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1_score": 0.8,
+              "support": 3,
+              "tp": 2,
+              "fp": 0,
+              "fn": 1,
+              "tn": 22
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 22,
+              "实例类": 0,
+              "null": 0
+            },
+            "实例类": {
+              "制度类": 1,
+              "实例类": 2,
+              "null": 0
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6252412000030745
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.7799361999932444
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6177741999999853
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.604185599993798
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval",
+                "regulation_search"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 1.0141723999986425
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": false,
+              "response_time": 0.5942563999997219
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5805025000008754
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6543318999902112
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6872449000074994
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6084832000051392
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5797665999998571
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6225851000053808
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6686309999931837
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6553504999901634
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6633601000066847
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6535931000107666
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.633880199995474
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6140175000036834
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6078072999953292
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5962564000074053
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.623274700003094
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6171313999948325
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.626038200003677
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6019473000051221
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval",
+                "regulation_search"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 1.1465777000121307
+            }
+          ]
+        }
+      ],
+      "aggregated_stats": {
+        "mean_accuracy": 0.9466666666666667,
+        "std_accuracy": 0.023094010767584987,
+        "min_accuracy": 0.92,
+        "max_accuracy": 0.96
+      }
+    },
+    "zhipu": {
+      "meta": {
+        "test_time": "2025-11-18T19:19:55.369934",
+        "model": "glm-4-flash",
+        "temperature": 0.3,
+        "rounds": 3,
+        "samples_per_round": 25
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "overall_metrics": {
+            "accuracy": 0.2,
+            "correct_count": 5,
+            "total_count": 25,
+            "no_prediction_count": 18,
+            "macro_precision": 0.6666666666666666,
+            "macro_recall": 0.25757575757575757,
+            "macro_f1": 0.3205128205128205,
+            "weighted_precision": 0.92,
+            "weighted_recall": 0.2,
+            "weighted_f1": 0.3107692307692308,
+            "avg_response_time": 7.877768695999403,
+            "min_response_time": 0.8102875999902608,
+            "max_response_time": 15.215078799999901
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.2,
+            "no_tool_call_rate": 0.72,
+            "multiple_tool_call_rate": 0.0,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 0.28,
+            "single_tool_call_accuracy": 0.7142857142857143,
+            "tool_call_distribution": {
+              "regulation_search": 4,
+              "case_retrieval": 3
+            },
+            "avg_tools_per_query": 0.28,
+            "response_time_p50": 8.554692800011253,
+            "response_time_p95": 14.960308990000339,
+            "response_time_p99": 15.215078799999901,
+            "total_samples": 25,
+            "successful_calls": 5,
+            "no_tool_calls": 18,
+            "multiple_calls": 0,
+            "hallucinated_calls": 0,
+            "valid_calls": 7,
+            "single_calls_total": 7,
+            "single_calls_correct": 5
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 1.0,
+              "recall": 0.18181818181818182,
+              "f1_score": 0.3076923076923077,
+              "support": 22,
+              "tp": 4,
+              "fp": 0,
+              "fn": 18,
+              "tn": 3
+            },
+            "实例类": {
+              "precision": 0.3333333333333333,
+              "recall": 0.3333333333333333,
+              "f1_score": 0.3333333333333333,
+              "support": 3,
+              "tp": 1,
+              "fp": 2,
+              "fn": 2,
+              "tn": 20
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 4,
+              "实例类": 2,
+              "null": 16
+            },
+            "实例类": {
+              "制度类": 0,
+              "实例类": 1,
+              "null": 2
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 2.381674499993096
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 1.688484400001471
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 6.912888399994699
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 13.41163279999455
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 2.267351400005282
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 4.993260699993698
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": false,
+              "response_time": 0.8102875999902608
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 2.889284500008216
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.74138170000515
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 8.554692800011253
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 7.377261800007545
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": false,
+              "response_time": 2.115070600004401
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 9.749804599996423
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.28448760000174
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 8.199479499991867
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.291770800002269
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 9.181333899992751
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 14.365846100001363
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.708481499998015
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 2.5106165999895893
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.870516499999212
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 9.563704600004712
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.783814399997937
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 15.215078799999901
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 5.076011299999664
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "overall_metrics": {
+            "accuracy": 0.2,
+            "correct_count": 5,
+            "total_count": 25,
+            "no_prediction_count": 19,
+            "macro_precision": 0.75,
+            "macro_recall": 0.25757575757575757,
+            "macro_f1": 0.35384615384615387,
+            "weighted_precision": 0.94,
+            "weighted_recall": 0.2,
+            "weighted_f1": 0.3187692307692308,
+            "avg_response_time": 8.257009603999904,
+            "min_response_time": 0.5754506999946898,
+            "max_response_time": 16.939266100001987
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.2,
+            "no_tool_call_rate": 0.76,
+            "multiple_tool_call_rate": 0.0,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 0.24,
+            "single_tool_call_accuracy": 0.8333333333333334,
+            "tool_call_distribution": {
+              "regulation_search": 4,
+              "case_retrieval": 2
+            },
+            "avg_tools_per_query": 0.24,
+            "response_time_p50": 9.906799499993213,
+            "response_time_p95": 16.56140179000213,
+            "response_time_p99": 16.939266100001987,
+            "total_samples": 25,
+            "successful_calls": 5,
+            "no_tool_calls": 19,
+            "multiple_calls": 0,
+            "hallucinated_calls": 0,
+            "valid_calls": 6,
+            "single_calls_total": 6,
+            "single_calls_correct": 5
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 1.0,
+              "recall": 0.18181818181818182,
+              "f1_score": 0.3076923076923077,
+              "support": 22,
+              "tp": 4,
+              "fp": 0,
+              "fn": 18,
+              "tn": 3
+            },
+            "实例类": {
+              "precision": 0.5,
+              "recall": 0.3333333333333333,
+              "f1_score": 0.4,
+              "support": 3,
+              "tp": 1,
+              "fp": 1,
+              "fn": 2,
+              "tn": 21
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 4,
+              "实例类": 1,
+              "null": 17
+            },
+            "实例类": {
+              "制度类": 0,
+              "实例类": 1,
+              "null": 2
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.803456699999515
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 1.2190555999986827
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 9.906799499993213
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 15.178817799998797
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 4.256056300000637
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 0.8624657999898773
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": false,
+              "response_time": 1.0025790000072448
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 2.3823380999965593
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 15.269062200008193
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.535743200001889
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.624218400000245
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.5754506999946898
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.896216600012849
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.298240900010569
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.880720100001781
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 13.20885609999823
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 6.331977599998936
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 13.862311800010502
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 7.38219879999815
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 2.2223998999979813
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 16.939266100001987
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 2.316201199995703
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.106864199988195
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 15.679718400002457
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 6.6842250999907264
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "overall_metrics": {
+            "accuracy": 0.24,
+            "correct_count": 6,
+            "total_count": 25,
+            "no_prediction_count": 19,
+            "macro_precision": 1.0,
+            "macro_recall": 0.2803030303030303,
+            "macro_f1": 0.4351851851851852,
+            "weighted_precision": 1.0,
+            "weighted_recall": 0.24,
+            "weighted_f1": 0.3859259259259259,
+            "avg_response_time": 7.6864573760004715,
+            "min_response_time": 0.649293199996464,
+            "max_response_time": 17.899708100012504
+          },
+          "tool_call_metrics": {
+            "tool_call_success_rate": 0.24,
+            "no_tool_call_rate": 0.76,
+            "multiple_tool_call_rate": 0.0,
+            "tool_hallucination_rate": 0.0,
+            "valid_tool_call_rate": 0.24,
+            "single_tool_call_accuracy": 1.0,
+            "tool_call_distribution": {
+              "regulation_search": 5,
+              "case_retrieval": 1
+            },
+            "avg_tools_per_query": 0.24,
+            "response_time_p50": 8.550364200011245,
+            "response_time_p95": 17.438483630008704,
+            "response_time_p99": 17.899708100012504,
+            "total_samples": 25,
+            "successful_calls": 6,
+            "no_tool_calls": 19,
+            "multiple_calls": 0,
+            "hallucinated_calls": 0,
+            "valid_calls": 6,
+            "single_calls_total": 6,
+            "single_calls_correct": 6
+          },
+          "class_metrics": {
+            "制度类": {
+              "precision": 1.0,
+              "recall": 0.22727272727272727,
+              "f1_score": 0.37037037037037035,
+              "support": 22,
+              "tp": 5,
+              "fp": 0,
+              "fn": 17,
+              "tn": 3
+            },
+            "实例类": {
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "f1_score": 0.5,
+              "support": 3,
+              "tp": 1,
+              "fp": 0,
+              "fn": 2,
+              "tn": 22
+            }
+          },
+          "confusion_matrix": {
+            "制度类": {
+              "制度类": 5,
+              "实例类": 0,
+              "null": 17
+            },
+            "实例类": {
+              "制度类": 0,
+              "实例类": 1,
+              "null": 2
+            }
+          },
+          "results": [
+            {
+              "question": "请提供人员设备进出管理的相关制度",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.7196028000034858
+            },
+            {
+              "question": "人员设备进出管理的最新修改日期和版本",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 2.115622600002098
+            },
+            {
+              "question": "人员进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 8.550364200011245
+            },
+            {
+              "question": "设备进出的流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.013296599994646
+            },
+            {
+              "question": "浦江25年的培训计划是什么",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 3.0896055000048364
+            },
+            {
+              "question": "是否有培训记录",
+              "true_label": "实例类",
+              "predicted_tools": [
+                "case_retrieval"
+              ],
+              "predicted_label": "实例类",
+              "is_correct": true,
+              "response_time": 0.7249583999946481
+            },
+            {
+              "question": "请提供培训相关的制度文档",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.6856849000032526
+            },
+            {
+              "question": "培训管理制度的最近修改日期是",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 1.371119199990062
+            },
+            {
+              "question": "应急组织架构图是什么，各角色的职责是哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 17.899708100012504
+            },
+            {
+              "question": "应急指挥机制是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 7.899733099999139
+            },
+            {
+              "question": "有哪些应急预案",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 12.368599699999322
+            },
+            {
+              "question": "是否有应急物资库",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 0.649293199996464
+            },
+            {
+              "question": "临时拜访人员的门禁权限是如何管理的",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 10.828444600003422
+            },
+            {
+              "question": "门禁卡使用管理要求是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 13.182105500003672
+            },
+            {
+              "question": "离职员工的门禁权限如何处理",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.634736300009536
+            },
+            {
+              "question": "门禁权限分配的审批流程是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.355314199987333
+            },
+            {
+              "question": "文档密级有哪些",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 9.013877599994885
+            },
+            {
+              "question": "如何做文档的版本控制",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 13.05938099999912
+            },
+            {
+              "question": "管理制度文件有哪些层级",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 7.950463899993338
+            },
+            {
+              "question": "不同层级文档的维护人是谁",
+              "true_label": "制度类",
+              "predicted_tools": [
+                "regulation_search"
+              ],
+              "predicted_label": "制度类",
+              "is_correct": true,
+              "response_time": 1.442261399992276
+            },
+            {
+              "question": "机房区域的清洁规范是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 11.008562300004996
+            },
+            {
+              "question": "清洁频次是多少",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 3.145870399996056
+            },
+            {
+              "question": "设备间的清洁标准是什么",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 8.77564990000974
+            },
+            {
+              "question": "机房清洁中的规范要求",
+              "true_label": "制度类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 16.36229319999984
+            },
+            {
+              "question": "2025年浦江数据中心的维护计划",
+              "true_label": "实例类",
+              "predicted_tools": [],
+              "predicted_label": null,
+              "is_correct": false,
+              "response_time": 8.314885800005868
+            }
+          ]
+        }
+      ],
+      "aggregated_stats": {
+        "mean_accuracy": 0.21333333333333335,
+        "std_accuracy": 0.023094010767585018,
+        "min_accuracy": 0.2,
+        "max_accuracy": 0.24
+      }
+    }
+  }
+}
