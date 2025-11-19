@@ -1,11 +1,11 @@
 ﻿编号,文档,Q,A,标签,路径
-1,数据中心人员设备进出管理规定,请提供人员设备进出管理的相关制度,,实例类,
+1,数据中心人员设备进出管理规定,请提供人员设备进出管理的相关制度,,制度类,
 2,数据中心人员设备进出管理规定,人员设备进出管理的最新修改日期和版本,,制度类,
 3,数据中心人员设备进出管理规定,人员进出的流程是什么,,制度类,
 4,数据中心人员设备进出管理规定,设备进出的流程是什么,,制度类,
 5,培训管理,浦江25年的培训计划是什么,,实例类,
 6,培训管理,是否有培训记录,,实例类,
-7,培训管理,请提供培训相关的制度文档,,实例类,
+7,培训管理,请提供培训相关的制度文档,,制度类,
 8,培训管理,培训管理制度的最近修改日期是,,制度类,
 9,数据中心应急管理规定,应急组织架构图是什么，各角色的职责是哪些,,制度类,
 10,数据中心应急管理规定,应急指挥机制是什么,,制度类,
@@ -59,10 +59,10 @@
 58,数据中心二次施工管理规定,如何进行二次施工申请,,制度类,
 59,数据中心二次施工管理规定,二次施工的人员资质要求,,制度类,
 60,数据中心安全管理规定,数据中心的物理安全区域划分与管控要求,,制度类,浦江数据中心/23-安全管理/01-安全管理细则/浦江/IP-PJ-16_浦江数据中心安全管理规定V1.0/IP-PJ-16_浦江数据中心安全管理规定V1.0.pdf
-61,数据中心安全管理规定,请提供数据中心安全管理规定制度文档,,实例类,
+61,数据中心安全管理规定,请提供数据中心安全管理规定制度文档,,制度类,
 62,数据中心安全管理规定,数据中心的密调流程,,制度类,
 63,数据中心安全管理规定,数据中心的信息安全管理有哪几个方面,,制度类,
-64,数据中心质量管理规定,请提供数据中心的质量管理相关制度,,实例类,
+64,数据中心质量管理规定,请提供数据中心的质量管理相关制度,,制度类,
 65,数据中心质量管理规定,审计发现的问题是如何整改的,,制度类,
 66,数据中心质量管理规定,请提供SH16的问题清单,,实例类,
 67,数据中心质量管理规定,质量管理的最新修订日期是,,制度类,
@@ -78,12 +78,12 @@
 77,数据中心供应商管理规定,有哪些供应商类型和级别,,制度类,
 78,数据中心供应商管理规定,供应商施工应如何管理,,制度类,
 79,数据中心供应商管理规定,如何考核供应商，考核标准是什么,,制度类,
-80,数据中心供应商管理规定,请提供供应商相关管理规定文档,,实例类,
+80,数据中心供应商管理规定,请提供供应商相关管理规定文档,,制度类,
 81,数据中心容量管理规定,列头柜的安全管理阈值是什么,,制度类,
 82,数据中心容量管理规定,请提供UPS的容量管理要求,,制度类,
-83,数据中心容量管理规定,请提供容量管理相关制度,,实例类,
+83,数据中心容量管理规定,请提供容量管理相关制度,,制度类,
 84,数据中心容量管理规定,容量的数据来源有哪些,,制度类,
-85,数据中心能源管理规定,请提供能源管理相关制度文档,,实例类,
+85,数据中心能源管理规定,请提供能源管理相关制度文档,,制度类,
 86,数据中心能源管理规定,数据中心如何做节能管理的,,制度类,
 87,数据中心能源管理规定,如何进行能源统计,,制度类,
 88,数据中心能源管理规定,最新一个月SH16的用电量,,实例类,
@@ -98,3 +98,109 @@
 97,文档管理,SH16消防验收报告,,实例类,
 98,巡检管理,会有管理人员做巡检结果审阅么？,,制度类,
 99,文档管理,浦江园区的等级保护证书,,实例类,
+100,,BNPP机柜门禁访问记录,,实例类,
+101,,BNPP机柜门禁权限,,实例类,
+102,,BNPP机柜临时人员出入审批记录,,实例类,
+103,,BNPP机柜临时人员出入登记表,,实例类,
+104,,BNPP相关机房的防雷检测报告,,实例类,
+105,,BNPP相关机房的消防验收报告,,实例类,
+106,,BNPP相关机房的消防维检报告,,实例类,
+107,,BNPP相关机房的漏水检测记录,,实例类,
+108,,BNPP相关机房的温湿度检测记录,,实例类,
+109,,BNPP相关机房的过电压防护测记录,,实例类,
+110,,BNPP相关机房的UPS维检记录,,实例类,
+111,,BNPP相关机房的柴油发电机系统测试记录,,实例类,
+112,,BNPP相关机房的排烟装置检测报告,,实例类,
+113,,BNPP相关机房的排烟装置检测记录,,实例类,
+114,,BNPP相关机房的自动探测器检测记录,,实例类,
+115,,BNPP相关机房的报警装置检测记录,,实例类,
+116,,BNPP相关机房的手动灭火器检测记录,,实例类,
+117,,BNPP相关机房的入侵检测系统检测记录,,实例类,
+118,,BNPP相关机房的监控装置检测记录,,实例类,
+119,,BNPP相关机房的冷却装置检测记录,,实例类,
+120,,BNPP相关机房的电力接线维检记录,,实例类,
+121,,BNPP相关机房的设备更换记录,,实例类,
+122,,BNPP相关机房的设备报废及数据擦除记录,,实例类,
+123,,机房安全巡逻点位,,实例类,
+124,,机房安全巡逻记录,,实例类,
+125,,车辆进入控制流程,,实例类,
+126,,车辆进入申请记录,,实例类,
+127,,携带设备进入机房区域审批记录,,实例类,
+128,,机房年度预防性维护作业计划,,实例类,
+129,,机房年度预防性维护记录,,实例类,
+1,安全检查与隐患排查治理管理制度,安全检查的频率和周期是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-19 安全检查与隐患排查治理管理制度Safety Inspection and Hazard Elimination  Management System/IP-PJ-EHS-19 安全检查与隐患排查治理管理制度Safety Inspection and Hazard Investigation  Management System(1).docx
+2,安全检查与隐患排查治理管理制度,隐患排查的治理流程包括哪些关键步骤？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-19 安全检查与隐患排查治理管理制度Safety Inspection and Hazard Elimination  Management System/IP-PJ-EHS-19 安全检查与隐患排查治理管理制度Safety Inspection and Hazard Investigation  Management System(1).docx
+3,特种设备管理制度,特种设备的分类标准是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-10 特种设备管理制度 Special Equipment Management System/IP-PJ-EHS-10 特种设备管理制度 Special Equipment Management System.docx
+4,特种设备管理制度,特种设备管理中各相关部门的职责分工是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-10 特种设备管理制度 Special Equipment Management System/IP-PJ-EHS-10 特种设备管理制度 Special Equipment Management System.docx
+5,生态环境保护责任制,生态环境保护责任制的核心管理要求有哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-02 生态环境保护责任制 Ecological and Environmental Protection Responsibility System/IP-PJ-EHS-02 生态环境保护责任制 Ecological and Environmental Protection Responsibility System.docx
+6,生态环境保护责任制,如何划分不同部门在生态环境保护中的具体职责？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-02 生态环境保护责任制 Ecological and Environmental Protection Responsibility System/IP-PJ-EHS-02 生态环境保护责任制 Ecological and Environmental Protection Responsibility System.docx
+7,EHS会议管理制度,EHS会议的类型和召开频率是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-03 EHS会议管理制度 EHS Meeting Management System/IP-PJ-EHS-03 EHS会议管理制度 EHS Meeting Management System.docx
+8,EHS会议管理制度,EHS会议的参会人员和主持人有哪些具体要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-03 EHS会议管理制度 EHS Meeting Management System/IP-PJ-EHS-03 EHS会议管理制度 EHS Meeting Management System.docx
+9,安全生产费用提取与使用管理制度,安全生产费用的提取比例是如何确定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-04 安全生产费用提取和使用管理制度 Work Safety Funds Withdrawal and Utilization Management System/IP-PJ-EHS-04 安全生产费用提取和使用管理制度 Work Safety Funds Withdrawal and Utilization Management System.docx
+10,安全生产费用提取与使用管理制度,安全生产费用的使用范围包括哪些方面？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-04 安全生产费用提取和使用管理制度 Work Safety Funds Withdrawal and Utilization Management System/IP-PJ-EHS-04 安全生产费用提取和使用管理制度 Work Safety Funds Withdrawal and Utilization Management System.docx
+11,EHS法律法规和其他要求的获取及合规性评价管理制度,合规性评价的频率和要求是如何规定的？,,制度类,"AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-06 EHS法律法规和其他要求的获取及合规性评价管理制度 EHS Laws, R/IP-PJ-EHS-06 EHS法律法规和其他要求的获取及合规性评价管理制度 EHS Laws, R.docx"
+12,EHS法律法规和其他要求的获取及合规性评价管理制度,获取EHS法律法规的渠道和方法有哪些？,,制度类,"AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-06 EHS法律法规和其他要求的获取及合规性评价管理制度 EHS Laws, R/IP-PJ-EHS-06 EHS法律法规和其他要求的获取及合规性评价管理制度 EHS Laws, R.docx"
+13,EHS培训管理制度,员工EHS培训的频率和周期是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-08 EHS培训管理制度 EHS Training Management System/IP-PJ-EHS-08 EHS培训管理制度EHS Training Management System.docx
+14,EHS培训管理制度,新员工入职时EHS培训的考核标准是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-08 EHS培训管理制度 EHS Training Management System/IP-PJ-EHS-08 EHS培训管理制度EHS Training Management System.docx
+15,劳动防护用品配备和使用管理制度,劳动防护用品的配备标准是根据哪些因素确定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-16 劳动防护用品配备和使用管理制度 Personal Protection Equipment Management System/IP-PJ-EHS-16 劳动防护用品配备和使用管理制度 Personal Protective Equipment Management System.docx
+16,劳动防护用品配备和使用管理制度,员工在使用劳动防护用品时需要遵守哪些基本规定？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-16 劳动防护用品配备和使用管理制度 Personal Protection Equipment Management System/IP-PJ-EHS-16 劳动防护用品配备和使用管理制度 Personal Protective Equipment Management System.docx
+17,安全生产责任制度,数据中心内各部门在安全生产方面的具体职责分工是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-01 安全生产责任制度 Safety Production Responsibility System/IP-PJ-EHS-01 安全生产责任制度 Safety Production Responsibility System.docx
+18,安全生产责任制度,安全生产责任制度中对管理层人员的考核标准有哪些具体要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-01 安全生产责任制度 Safety Production Responsibility System/IP-PJ-EHS-01 安全生产责任制度 Safety Production Responsibility System.docx
+19,变电站安全管理制度,变电站区域的人员准入有哪些具体的管理要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-07 变电站安全管理制度 Substation Safety Management System/IP-PJ-EHS-07 变电站安全管理制度 Substation Safety Management System.docx
+20,变电站安全管理制度,变电站设备维护的安全操作规范主要包括哪些内容？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-07 变电站安全管理制度 Substation Safety Management System/IP-PJ-EHS-07 变电站安全管理制度 Substation Safety Management System.docx
+21,EHS标识管理制度,数据中心内的EHS标识需要遵循哪些基本分类标准？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-17 EHS标识管理制度EHS Label Management System/IP-PJ-EHS-17 EHS标识管理制度EHS Label Management System.docx
+22,EHS标识管理制度,在EHS标识管理中，各部门的职责分工是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-17 EHS标识管理制度EHS Label Management System/IP-PJ-EHS-17 EHS标识管理制度EHS Label Management System.docx
+23,高风险作业管理制度,高风险作业的分类和等级划分标准是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-11 高风险作业管理制度 High Risk Opration Management System/IP-PJ-EHS-11 高风险作业管理制度 High Risk Opration Management System.docx
+24,高风险作业管理制度,在进行高风险作业前，需要哪些审批流程和责任人确认？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-11 高风险作业管理制度 High Risk Opration Management System/IP-PJ-EHS-11 高风险作业管理制度 High Risk Opration Management System.docx
+25,工伤保险与安全生产责任保险管理制度,在什么情况下需要同时购买工伤保险和安全生产责任保险？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-05 工伤保险与安全生产责任保险管理制度 Work Injury Insurance and Work Safety Liability Insurance Management System/IP-PJ-EHS-05 工伤保险与安全生产责任保险管理制度 Work Injury Insurance and Work Safety Liability Insurance Management System.docx
+26,工伤保险与安全生产责任保险管理制度,该制度中对保险费用的缴纳标准和方式有哪些具体规定？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-05 工伤保险与安全生产责任保险管理制度 Work Injury Insurance and Work Safety Liability Insurance Management System/IP-PJ-EHS-05 工伤保险与安全生产责任保险管理制度 Work Injury Insurance and Work Safety Liability Insurance Management System.docx
+27,相关方EHS管理制度,相关方在数据中心EHS管理中的主要责任和义务有哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-14 相关方EHS管理制度 EHS Management System of Relevant Parties/IP-PJ-EHS-14 相关方EHS管理制度  EHS Management System for Relevant Parties.docx
+28,相关方EHS管理制度,数据中心如何对相关方的EHS表现进行评估和监督？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-14 相关方EHS管理制度 EHS Management System of Relevant Parties/IP-PJ-EHS-14 相关方EHS管理制度  EHS Management System for Relevant Parties.docx
+29,应急救援管理制度,数据中心应急救援流程中各部门的职责分工是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-20 应急救援管理制度Emergency rescue management system/IP-PJ-EHS-20 应急救援管理制度Emergency rescue management system.docx
+30,应急救援管理制度,针对不同类型的事故，应急响应机制有哪些分类和等级标准？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-20 应急救援管理制度Emergency rescue management system/IP-PJ-EHS-20 应急救援管理制度Emergency rescue management system.docx
+31,危险源识别及风险评估管理制度,危险源识别和风险评估的流程具体包括哪些步骤？,,制度类,无
+32,危险源识别及风险评估管理制度,在风险评估过程中，如何确定不同危险源的等级划分标准？,,制度类,无
+33,危险化学品管理制度,危险化学品的采购和存储需要遵循哪些具体的管理规定？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-13 危险化学品管理制度 Hazadous Chemicals Management System/IP-PJ-EHS-13 危险化学品管理制度 Hazadous Chemicals Management System.docx
+34,危险化学品管理制度,在使用危险化学品时，操作人员的职责和权限划分是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-13 危险化学品管理制度 Hazadous Chemicals Management System/IP-PJ-EHS-13 危险化学品管理制度 Hazadous Chemicals Management System.docx
+35,职业健康管理制度,职业健康管理体系中，员工体检的频率和项目是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-15 职业健康管理制度 Occupational Health Management System/IP-PJ-EHS-15 职业健康管理制度 Occupational Health Management System.docx
+36,职业健康管理制度,在职业健康管理职责划分中，各部门应承担的具体职责是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-15 职业健康管理制度 Occupational Health Management System/IP-PJ-EHS-15 职业健康管理制度 Occupational Health Management System.docx
+37,挂牌上锁（LOTO）管理制度,在设备维护期间，哪些人员有权限进行挂牌上锁操作？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-12 挂牌上锁（LOTO）管理制度 LOTO Management System/IP-PJ-EHS-12 挂牌上锁（LOTO）管理制度 LOTO Management System.docx
+38,挂牌上锁（LOTO）管理制度,挂牌上锁的流程中，解除锁定需要满足哪些条件？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-12 挂牌上锁（LOTO）管理制度 LOTO Management System/IP-PJ-EHS-12 挂牌上锁（LOTO）管理制度 LOTO Management System.docx
+39,建设项目EHS“三同时”管理制度,建设项目中EHS‘三同时’管理的主要责任部门是哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-09 建设项目EHS“三同时“管理制度 EHS Three Simultaneities Management System for Construction Projects/IP-PJ-EHS-09 建设项目EHS“三同时“管理制度 EHS Three Simultaneities Management System for Construction Projects.docx
+40,建设项目EHS“三同时”管理制度,在项目竣工验收阶段，EHS‘三同时’的合规性审查流程是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-09 建设项目EHS“三同时“管理制度 EHS Three Simultaneities Management System for Construction Projects/IP-PJ-EHS-09 建设项目EHS“三同时“管理制度 EHS Three Simultaneities Management System for Construction Projects.docx
+41,工伤事故管理制度,工伤事故的报告流程包括哪些步骤？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-22 工伤事故管理制度 Work Injury Accident Management System/IP-PJ-EHS-22 工伤事故管理制度 Work Injury Accident Management System.docx
+42,工伤事故管理制度,如何定义和分类不同等级的工伤事故？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-22 工伤事故管理制度 Work Injury Accident Management System/IP-PJ-EHS-22 工伤事故管理制度 Work Injury Accident Management System.docx
+43,柴油罐区管理制度,柴油罐区的安全管理职责是如何划分的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-24 柴油罐区管理制度Diesel Tank Farm Management System/IP-PJ-EHS-24 柴油罐区管理制度Diesel Tank Farm Management System.docx
+44,柴油罐区管理制度,柴油罐区作业需要遵守哪些基本安全规定？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-24 柴油罐区管理制度Diesel Tank Farm Management System/IP-PJ-EHS-24 柴油罐区管理制度Diesel Tank Farm Management System.docx
+45,EHS事故报告和调查处理管理制度,事故发生后，需要在多长时间内完成初步报告？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-21 EHS事故报告和调查处理管理制度 EHS Accident Reporting and Investigation System/IP-PJ-EHS-21 EHS事故报告和调查处理管理制度 EHS Accident Reporting and Investigation System.docx
+46,EHS事故报告和调查处理管理制度,事故调查小组的组成成员有哪些具体职责分工？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-21 EHS事故报告和调查处理管理制度 EHS Accident Reporting and Investigation System/IP-PJ-EHS-21 EHS事故报告和调查处理管理制度 EHS Accident Reporting and Investigation System.docx
+47,EHS绩效考核与奖惩制度,绩效考核的具体指标包括哪些方面？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-33 EHS绩效考核与奖惩制度EHS Performance Assessment And Reward & Punishment System/IP-PJ-EHS-33 EHS绩效考核与奖惩制度.docx
+48,EHS绩效考核与奖惩制度,奖惩措施的划分标准是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-33 EHS绩效考核与奖惩制度EHS Performance Assessment And Reward & Punishment System/IP-PJ-EHS-33 EHS绩效考核与奖惩制度.docx
+49,环境因素辨识与评价控制管理制度,环境因素的辨识和评价流程具体包括哪些步骤？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-25 环境因素辨识与评价控制管理制度 Environmental Aspects Identification and Evaluation Control Management System/IP-PJ-EHS-25 环境因素辨识与评价控制管理制度 Environmental Aspects Identification and Evaluation Co.docx
+50,环境因素辨识与评价控制管理制度,在环境因素评价中，如何确定哪些因素是需要优先控制的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-25 环境因素辨识与评价控制管理制度 Environmental Aspects Identification and Evaluation Control Management System/IP-PJ-EHS-25 环境因素辨识与评价控制管理制度 Environmental Aspects Identification and Evaluation Co.docx
+51,危险废弃物管理制度,危险废弃物的分类标准是怎样规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-30 危险废弃物管理制度 Hazardous Waste Management System/IP-PJ-EHS-30 危险废物管理制度 Hazardous Waste Management System.docx
+52,危险废弃物管理制度,危险废弃物的处理流程中，各相关部门的职责分工是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-30 危险废弃物管理制度 Hazardous Waste Management System/IP-PJ-EHS-30 危险废物管理制度 Hazardous Waste Management System.docx
+53,废气排放管理制度,废气排放管理的责任部门是哪个，具体职责有哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-26 废气排放管理制度 Waste Gas Emission Managment System/IP-PJ-EHS-26 废气排放管理制度 Waste Gas Emission Management System.docx
+54,废气排放管理制度,废气排放的监测频率和标准是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-26 废气排放管理制度 Waste Gas Emission Managment System/IP-PJ-EHS-26 废气排放管理制度 Waste Gas Emission Management System.docx
+55,库房EHS管理制度,库房内危险化学品的管理有哪些具体规定？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-23 库房EHS管理制度Warehouse EHS Management System/IP-PJ-EHS-23 库房EHS管理制度Warehouse EHS Management System.docx
+56,库房EHS管理制度,库房安全管理中，对于消防设施的检查频率和维护要求是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-23 库房EHS管理制度Warehouse EHS Management System/IP-PJ-EHS-23 库房EHS管理制度Warehouse EHS Management System.docx
+57,电子废弃物管理制度,电子废弃物的分类标准和管理要求是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-31 电子废弃物管理制度 Electronic Waste Management System/IP-PJ-EHS-31 电子废弃物管理制度 Electronic Waste Management System.docx
+58,电子废弃物管理制度,电子废弃物处理流程中各部门的职责分工是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-31 电子废弃物管理制度 Electronic Waste Management System/IP-PJ-EHS-31 电子废弃物管理制度 Electronic Waste Management System.docx
+59,噪声管理制度,数据中心内不同区域的噪声限值标准是如何划分的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-27 噪声管理制度 Noise Management System/IP-PJ-EHS-27 噪声管理制度 Noise Management System.docx
+60,噪声管理制度,噪声超标情况的报告和处理流程有哪些具体要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-27 噪声管理制度 Noise Management System/IP-PJ-EHS-27 噪声管理制度 Noise Management System.docx
+61,废水管理制度,数据中心废水排放需要满足哪些环保标准和要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-28 废水管理制度 Sewage Management System/IP-PJ-EHS-28 废水管理制度 Sewage Management System.docx
+62,废水管理制度,废水处理过程中各部门的职责分工是如何界定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-28 废水管理制度 Sewage Management System/IP-PJ-EHS-28 废水管理制度 Sewage Management System.docx
+63,危险废物污染环境防治责任制度,危险废物管理中的主要责任部门及其具体职责有哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-29 危险废物污染环境防治责任制度 Hazardous waste pollution prevention and control responsibility system/IP-PJ-EHS-29 危险废物污染环境防治责任制度 Hazardous waste pollution prevention and contro.docx
+64,危险废物污染环境防治责任制度,危险废物污染环境防治责任制度中，对废物分类和储存有哪些明确要求？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-29 危险废物污染环境防治责任制度 Hazardous waste pollution prevention and control responsibility system/IP-PJ-EHS-29 危险废物污染环境防治责任制度 Hazardous waste pollution prevention and contro.docx
+65,EHS文件档案管理制度,EHS相关文档的存档期限是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-36 EHS文件档案管理制度 EHS Document Archive Management System/IP-PJ-EHS-36 EHS文件档案管理制度 EHS Document Archive Management System.docx
+66,EHS文件档案管理制度,哪些人员有权限访问和修改EHS文件档案？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-36 EHS文件档案管理制度 EHS Document Archive Management System/IP-PJ-EHS-36 EHS文件档案管理制度 EHS Document Archive Management System.docx
+67,消防安全管理制度,数据中心内消防设施需要多久进行一次全面检查？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-38 消防安全管理制度Fire safety management system/IP-PJ-EHS-38 消防安全管理制度Fire safety management system.docx
+68,消防安全管理制度,消防安全责任人有哪些具体的职责和权限？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-38 消防安全管理制度Fire safety management system/IP-PJ-EHS-38 消防安全管理制度Fire safety management system.docx
+69,电气安全管理制度,数据中心电气安全管理的责任部门及主要职责是什么？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-32 电气安全管理制度Electrical Safety Management System/IP-PJ-EHS-32 电气安全管理制度Electrical Safety Management System.docx
+70,电气安全管理制度,电气设备操作人员的资质要求和培训考核规定有哪些？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-32 电气安全管理制度Electrical Safety Management System/IP-PJ-EHS-32 电气安全管理制度Electrical Safety Management System.docx
+71,EHS体系运行审核管理制度,EHS体系审核的频率和周期是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-34 EHS体系运行审核管理制度 EHS System Operation Audit Management System/IP-PJ-EHS-34 EHS体系运行审核管理制度 EHS System Operation Audit Management System.docx
+72,EHS体系运行审核管理制度,在EHS体系运行审核中，各部门的职责分工是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-34 EHS体系运行审核管理制度 EHS System Operation Audit Management System/IP-PJ-EHS-34 EHS体系运行审核管理制度 EHS System Operation Audit Management System.docx
+73,防雷、防静电接地装置安全管理制度,防雷和防静电接地装置的定期检测频率是如何规定的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-37 防雷、防静电接地装置安全管理制度Safety management system for lightning protection and anti-static devices/IP-PJ-EHS-37 防雷、防静电接地装置安全管理制度Safety management system for lightning protection and anti-static devices.docx
+74,防雷、防静电接地装置安全管理制度,在防雷、防静电接地装置安全管理中，不同部门的职责分工是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-37 防雷、防静电接地装置安全管理制度Safety management system for lightning protection and anti-static devices/IP-PJ-EHS-37 防雷、防静电接地装置安全管理制度Safety management system for lightning protection and anti-static devices.docx
+75,EHS变更管理制度,在EHS变更管理过程中，哪些类型的变更需要经过正式审批流程？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-35 EHS变更管理制度EHS Change Management System/IP-PJ-EHS-35 EHS变更管理制度EHS Change Management System.docx
+76,EHS变更管理制度,当发生EHS相关变更时，相关部门和人员的职责分工是怎样的？,,制度类,AnyShare://浦江数据中心/24-EHS管理（责任人：楚靖岳）/01-EHS制度文件/IP-PJ-EHS-35 EHS变更管理制度EHS Change Management System/IP-PJ-EHS-35 EHS变更管理制度EHS Change Management System.docx
