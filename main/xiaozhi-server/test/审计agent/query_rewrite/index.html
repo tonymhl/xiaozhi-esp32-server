@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Rewrite Agent 评估看板</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .metrics { display: flex; gap: 20px; margin-bottom: 20px; padding: 15px; background-color: #e3f2fd; border-radius: 6px; }
+        .metric-item { display: flex; flex-direction: column; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #1976d2; }
+        .metric-label { font-size: 14px; color: #666; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
+        th { background-color: #f8f9fa; font-weight: 600; }
+        tr:hover { background-color: #fafafa; }
+        
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 5px; }
+        .btn-approve { background-color: #4caf50; color: white; }
+        .btn-reject { background-color: #f44336; color: white; }
+        .btn-details { background-color: #2196f3; color: white; }
+        
+        .details-row { background-color: #f9f9f9; display: none; }
+        .details-content { padding: 15px; border-left: 3px solid #2196f3; }
+        
+        pre { background-color: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Query Rewrite Agent 评估结果</h1>
+        
+        <div class="metrics">
+            <div class="metric-item">
+                <span class="metric-value" id="overall-acc">0%</span>
+                <span class="metric-label">总体准确率 (模型判定)</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value" id="total-cases">0</span>
+                <span class="metric-label">测试用例总数</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-value" id="human-reviewed-count">0</span>
+                <span class="metric-label">人工已复核数</span>
+            </div>
+        </div>
+
+        <table id="results-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%">ID</th>
+                    <th style="width: 30%">原始 Query</th>
+                    <th style="width: 25%">期望结果 (Expected)</th>
+                    <th style="width: 25%">模型生成 (Result)</th>
+                    <th style="width: 15%">状态 & 操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let evalData = null;
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/results');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                evalData = await response.json();
+                
+                if (!evalData || !evalData.details) {
+                    throw new Error("Invalid data format received");
+                }
+                
+                renderTable();
+                updateMetrics();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.querySelector('.container').innerHTML += `<div style="color: red; padding: 20px;">Error loading data: ${error.message}. Ensure evaluator.py has run and generated evaluation_results.json</div>`;
+            }
+        }
+
+        function updateMetrics() {
+            if (!evalData || !evalData.summary) return;
+            const summary = evalData.summary;
+            document.getElementById('overall-acc').textContent = (summary.overall_accuracy * 100).toFixed(1) + '%';
+            document.getElementById('total-cases').textContent = summary.total_cases;
+            
+            const reviewed = evalData.details.filter(d => d.human_reviewed).length;
+            document.getElementById('human-reviewed-count').textContent = reviewed;
+        }
+
+        function renderTable() {
+            if (!evalData || !evalData.details) return;
+            const tbody = document.querySelector('#results-table tbody');
+            tbody.innerHTML = '';
+
+            evalData.details.forEach(item => {
+                const tr = document.createElement('tr');
+                const isPass = item.final_verdict === 'pass';
+                
+                // Use the first generated result for display
+                const firstGen = item.iterations && item.iterations.length > 0 ? item.iterations[0].generated : [];
+                const iterations = item.iterations || [];
+                
+                tr.innerHTML = `
+                    <td>${item.id + 1}</td>
+                    <td>${item.head || ''}</td>
+                    <td><pre>${JSON.stringify(item.expected || [], null, 2)}</pre></td>
+                    <td><pre>${JSON.stringify(firstGen, null, 2)}</pre></td>
+                    <td>
+                        <div class="${isPass ? 'status-pass' : 'status-fail'}">
+                            ${isPass ? 'PASS' : 'FAIL'}
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <button class="btn btn-approve" onclick="updateVerdict(${item.id}, 'pass')">✔</button>
+                            <button class="btn btn-reject" onclick="updateVerdict(${item.id}, 'fail')">✘</button>
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <button class="btn btn-details" onclick="toggleDetails(${item.id})">Details</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Details Row
+                const detailsTr = document.createElement('tr');
+                detailsTr.id = `details-${item.id}`;
+                detailsTr.className = 'details-row';
+                detailsTr.innerHTML = `
+                    <td colspan="5">
+                        <div class="details-content">
+                            <h4>详细迭代记录 (${iterations.length}次运行)</h4>
+                            ${iterations.map(iter => `
+                                <div style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+                                    <strong>Iteration ${iter.iteration}:</strong> 
+                                    <span style="color: ${iter.is_correct ? 'green' : 'red'}">${iter.is_correct ? 'Correct' : 'Incorrect'}</span>
+                                    <br>
+                                    Generated: <code>${JSON.stringify(iter.generated)}</code><br>
+                                    Reason: ${iter.reason}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(detailsTr);
+            });
+        }
+
+        function toggleDetails(id) {
+            const row = document.getElementById(`details-${id}`);
+            row.style.display = row.style.display === 'table-row' ? 'none' : 'table-row';
+        }
+
+        async function updateVerdict(id, verdict) {
+            // Optimistic update
+            const item = evalData.details.find(d => d.id === id);
+            if (item) {
+                item.final_verdict = verdict;
+                item.human_reviewed = true;
+                
+                // Recalculate summary locally
+                let totalScore = 0;
+                let validCases = 0;
+                evalData.details.forEach(d => {
+                    if (d.expected && d.expected.length > 0) {
+                        validCases++;
+                        if (d.final_verdict === 'pass') totalScore++;
+                    }
+                });
+                evalData.summary.overall_accuracy = validCases > 0 ? totalScore / validCases : 0;
+                
+                renderTable();
+                updateMetrics();
+
+                // Send to backend
+                try {
+                    await fetch('/api/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, verdict })
+                    });
+                } catch (e) {
+                    console.error('Failed to save update', e);
+                }
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
