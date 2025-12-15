@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审核平台原型 - 终极版 (含核心任务切换)</title>
+    <style>
+        /* --- 基础样式 --- */
+        :root {
+            --bg-light: #f5f7fa; --border-color: #e4e7ed; --text-primary: #303133; --text-secondary: #909399;
+            --primary-color: #409eff; --success-color: #67c23a; --danger-color: #f56c6c;
+            --drawer-width: 400px; --header-height: 50px;
+        }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-primary); overflow: hidden; }
+
+        /* --- 顶部导航栏 (C0) --- */
+        .top-header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); z-index: 10; position: relative; }
+        .brand { font-weight: bold; font-size: 18px; margin-right: 40px; display: flex; align-items: center;}
+        .brand-icon { width: 24px; height: 24px; background: var(--primary-color); border-radius: 4px; margin-right: 10px;}
+        .task-selector-container { display: flex; align-items: center; font-size: 14px; }
+        .task-label { color: var(--text-secondary); margin-right: 10px; font-weight: bold; }
+        .task-select { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; color: var(--text-primary); outline: none; min-width: 220px; font-weight: bold; }
+
+        /* --- 主体布局 --- */
+        .main-content-wrapper { display: flex; height: calc(100vh - var(--header-height)); position: relative; }
+        .left-nav { width: 60px; background: #304156; flex-shrink: 0; }
+        .panel { background: #fff; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 16px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+        .panel-body { flex-grow: 1; overflow-y: auto; padding: 20px; position: relative; }
+
+        /* --- 中间空间视图 --- */
+        .middle-space-view { flex: 1; min-width: 450px; }
+        .floor-selector-container { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-color); }
+        .floor-label { font-size: 14px; color: var(--text-secondary); margin-right: 15px; font-weight: bold;}
+        .floor-tabs { display: flex; gap: 10px; }
+        .floor-tab { padding: 6px 16px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.2s; background: #fff; color: var(--text-primary); }
+        .floor-tab:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .floor-tab.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 2px 6px rgba(64, 158, 255, 0.3); }
+
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .room-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; flex-direction: column; }
+        .room-card:hover { border-color: var(--primary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .room-card.selected { border-color: var(--primary-color); background-color: #ecf5ff; box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2); }
+        .room-card.hidden-floor { display: none; }
+        .room-title { font-weight: bold; font-size: 15px; margin-bottom: 12px; }
+        .room-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-val { font-size: 16px; font-weight: bold; color: var(--text-primary); margin-top: 4px; }
+        .stat-val.highlight { color: var(--primary-color); }
+
+        /* --- 右侧视频列表栏 --- */
+        .right-video-list { width: 400px; flex-shrink: 0; background-color: #fff; }
+        .filter-bar { padding: 10px 20px; border-bottom: 1px solid var(--border-color); background: #fcfcfc; display: flex; gap: 10px; align-items: center; }
+        .filter-select { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; color: var(--text-primary); outline: none; flex: 1; }
+        .filter-reset-btn { font-size: 12px; color: var(--primary-color); cursor: pointer; padding: 4px 8px; }
+        .filter-reset-btn:hover { text-decoration: underline; }
+
+        .video-card { display: flex; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+        .video-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: var(--primary-color); }
+        .video-card.active-card { border-color: var(--primary-color); background-color: #f0f9eb; }
+        .video-card.hidden { display: none; }
+        .card-thumbnail { width: 110px; background-color: #e9e9eb; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 12px; flex-shrink: 0; position: relative; }
+        .duration-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: #fff; padding: 2px 4px; border-radius: 2px; font-size: 10px; }
+        .card-content { padding: 12px; flex-grow: 1; min-width: 0; }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); }
+        .cam-name { font-weight: bold; color: var(--text-primary); font-size: 13px; margin-right: 8px;}
+        .card-summary { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-tags .tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 12px; background: #f4f4f5; color: var(--text-secondary); margin-right: 5px; }
+        .status-badge { position: absolute; top: 0; right: 0; padding: 4px 8px; font-size: 12px; color: white; border-bottom-left-radius: 6px; }
+        .status-ai { background-color: var(--primary-color); }
+        .status-human { background-color: var(--success-color); }
+
+        /* --- 侧边抽屉 (保持不变) --- */
+        .side-drawer { position: fixed; top: var(--header-height); right: 0; bottom: 0; width: var(--drawer-width); background: #fff; box-shadow: -4px 0 16px rgba(0,0,0,0.1); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; display: flex; flex-direction: column; border-left: 1px solid var(--border-color); }
+        .side-drawer.open { transform: translateX(0); }
+        .drawer-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 16px; }
+        .close-btn { cursor: pointer; padding: 5px; font-size: 20px; color: var(--text-secondary);}
+        .drawer-body { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .drawer-footer { padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; background: #fff; }
+        .video-player-placeholder { width: 100%; height: 180px; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border-radius: 4px; }
+        .annotation-section { margin-bottom: 25px; }
+        .section-title { font-weight: bold; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; }
+        .section-title .icon { margin-right: 6px; }
+        .structured-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-light); border-radius: 4px; margin-bottom: 10px; }
+        .ai-confidence { font-size: 12px; color: var(--primary-color); margin-left: 8px; }
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .semantic-textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; resize: vertical; font-family: inherit; line-height: 1.5; font-size: 14px; }
+        .semantic-textarea:focus { outline: none; border-color: var(--primary-color); }
+        .ai-hint { font-size: 12px; color: var(--text-secondary); margin-top: 5px; display: flex; align-items: center; }
+        .btn { padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer; font-size: 14px; transition: background 0.3s; flex: 1; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #66b1ff; }
+        .btn-outline { background: #fff; border: 1px solid var(--border-color); color: var(--text-primary); }
+        .btn-outline:hover { background: var(--bg-light); }
+    </style>
+</head>
+<body>
+
+<header class="top-header">
+    <div class="brand">
+        <div class="brand-icon"></div>
+        <span>万国智瞳巡检工作台</span>
+    </div>
+    <div class="task-selector-container">
+        <label class="task-label">当前任务 (核心上下文):</label>
+        <select class="task-select" id="mainTaskSelector" onchange="switchTaskContext(this.value)">
+            <option value="task1" selected>2025.12.1 例行巡检 (进行中)</option>
+            <option value="daily_monitor">日常事件监控 </option>
+        </select>
+    </div>
+</header>
+
+<div class="main-content-wrapper">
+    <div class="left-nav"></div>
+
+    <div class="panel middle-space-view">
+        <div class="panel-header">
+            <span>空间视图导航</span>
+            <span class="breadcrumb" id="breadcrumbText" style="font-size: 12px; font-weight: normal; color: var(--text-secondary);">
+                位置：园区 > 1F > 全部房间
+            </span>
+        </div>
+        <div class="panel-body">
+            <div class="floor-selector-container" id="floorSelector">
+                <span class="floor-label">楼层视图:</span>
+                <div class="floor-tabs">
+                    <div class="floor-tab" data-floor="BF" onclick="selectFloor(this, 'BF')">BF层</div>
+                    <div class="floor-tab active" data-floor="1F" onclick="selectFloor(this, '1F')">1F层</div>
+                    <div class="floor-tab" data-floor="2F" onclick="selectFloor(this, '2F')">2F层</div>
+                </div>
+            </div>
+            <div class="room-grid" id="roomGridContainer">
+                </div>
+        </div>
+    </div>
+
+    <div class="panel right-video-list">
+        <div class="panel-header">
+            <span>片段列表</span>
+        </div>
+        <div class="filter-bar">
+            <select class="filter-select" id="filterEventType" onchange="applyFilters()">
+                <option value="">全部事件类型</option>
+                <option value="person">人员入侵/徘徊</option>
+                <option value="leak">漏水检测</option>
+                <option value="smoke">烟雾告警</option>
+                <option value="static">画面静止/无异常</option>
+            </select>
+            <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+                <option value="">全部状态</option>
+                <option value="to_audit">🤖 待审核</option>
+                <option value="audited">✅ 已核查</option>
+            </select>
+            <span class="filter-reset-btn" onclick="resetFilters()">重置</span>
+        </div>
+
+        <div class="panel-body" id="videoListContainer">
+             </div>
+    </div>
+
+    <div class="side-drawer" id="annotationDrawer">
+        <div class="drawer-header">
+            <span>人工审核与标注</span>
+            <span class="close-btn" onclick="closeDrawer()">×</span>
+        </div>
+        <div class="drawer-body">
+            <div class="video-player-placeholder" id="drawerVideoPlaceholder">
+                [ 视频播放器区域 ]
+            </div>
+            <div class="annotation-section">
+                <div class="section-title">
+                    <span class="icon">📌</span>结构化事件核查 (小模型)
+                </div>
+                <div id="structuredItemsContainer"></div>
+            </div>
+            <div class="annotation-section">
+                <div class="section-title">
+                    <span class="icon">📝</span>场景语义描述 (大模型+人工)
+                </div>
+                <textarea class="semantic-textarea" id="drawerTextarea"></textarea>
+                <div class="ai-hint">🤖 以上内容由AI初步生成，请人工核实。</div>
+            </div>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn btn-outline" onclick="closeDrawer()">取消</button>
+            <button class="btn btn-primary" onclick="saveAnnotation()">保存标注结果</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- 全局状态与 DOM 引用 ---
+    const drawer = document.getElementById('annotationDrawer');
+    const drawerTextarea = document.getElementById('drawerTextarea');
+    const roomGridContainer = document.getElementById('roomGridContainer');
+    const videoListContainer = document.getElementById('videoListContainer');
+    let currentActiveCardId = null;
+    let selectedRoomId = null;
+    let currentSelectedFloor = '1F';
+
+    // --- [核心] 模拟数据源 (多任务上下文) ---
+    const taskDataMap = {
+        // 任务1数据：核心机房巡检 (原数据)
+        "task1": {
+            defaultFloor: '1F',
+            rooms: [
+                { id: 'room_pd', floor: '1F', title: '配电房 (核心区)', stats: [2, 3, 12], highlight: true },
+                { id: 'room_kt', floor: '1F', title: '精密空调间', stats: [1, 1, 4], highlight: true },
+                { id: 'room_lz', floor: 'BF', title: '冷站控制室', stats: [0, 1, 8], highlight: false },
+                { id: 'room_2f_a', floor: '2F', title: '2F机房A区', stats: [0, 5, 20], highlight: false }
+            ],
+            videos: [
+                { id: 'video1', room: 'room_pd', type: 'person', status: 'to_audit', badge: '🤖 待审核', thumb: '10s', cam: '配电房东侧CAM01', time: '10-24 14:30:45', summary: '自动摘要：检测到人员靠近配电柜，停留约5秒，随后离开。', tags: ['#人员徘徊', '#重点区域'] },
+                { id: 'video2', room: 'room_kt', type: 'static', status: 'to_audit', badge: '🤖 待审核', thumb: '8s', cam: '空调间全景CAM02', time: '10-24 14:32:10', summary: '自动摘要：画面静止，无明显人员活动，设备指示灯正常。', tags: ['#定时抽查'], opacity: 0.8 },
+                { id: 'video3', room: 'room_lz', type: 'static', status: 'audited', badge: '✅ 已核查', thumb: '15s', cam: '冷站入口CAM01', time: '10-24 14:35:22', summary: '<b>[人工修正]</b> 画面正常，无异常情况。', tags: ['#定时抽查'], opacity: 0.8, badgeClass: 'status-human' },
+                { id: 'video4', room: 'room_pd', type: 'leak', status: 'to_audit', badge: '🤖 待审核', thumb: '12s', cam: '配电房地面CAM03', time: '10-24 14:40:05', summary: '自动摘要：检测到地面有反光液体区域扩大，疑似漏水。', tags: ['#漏水告警'], tagStyle: 'color: var(--danger-color); background: #fef0f0;' }
+            ]
+        },
+        // 任务2数据：日常事件监控 (新数据)
+        "daily_monitor": {
+            defaultFloor: '1F',
+            rooms: [
+                { id: 'room_xf', floor: '1F', title: '消防通道 (东侧)', stats: [3, 3, 0], highlight: true },
+                { id: 'room_park', floor: '1F', title: '园区入口岗亭', stats: [1, 5, 2], highlight: false },
+                { id: 'room_roof', floor: '2F', title: '楼顶平台', stats: [0, 2, 1], highlight: false }
+            ],
+            videos: [
+                { id: 'video_xf1', room: 'room_xf', type: 'smoke', status: 'to_audit', badge: '🤖 待审核', thumb: '20s', cam: '消防通道CAM02', time: '10-25 09:15:00', summary: '自动摘要：检测到通道内有烟雾产生，疑似火情隐患。', tags: ['#烟雾告警', '#紧急'], tagStyle: 'color: var(--danger-color); background: #fef0f0;' },
+                { id: 'video_park1', room: 'room_park', type: 'person', status: 'to_audit', badge: '🤖 待审核', thumb: '15s', cam: '岗亭人脸CAM01', time: '10-25 08:30:22', summary: '自动摘要：识别到陌生人员在岗亭附近徘徊超过3分钟。', tags: ['#陌生人滞留'] },
+                { id: 'video_xf2', room: 'room_xf', type: 'static', status: 'to_audit', badge: '🤖 待审核', thumb: '5s', cam: '消防通道CAM01', time: '10-25 10:00:00', summary: '自动摘要：通道畅通，无杂物堆放。', tags: ['#日常巡查'] }
+            ]
+        }
+    };
+
+    let currentTaskData = null; // 当前加载的任务数据
+
+    // --- [核心] 业务逻辑：切换任务上下文 ---
+    function switchTaskContext(taskId) {
+        console.log("Switching to task context:", taskId);
+        // 1. 获取新任务的数据
+        currentTaskData = taskDataMap[taskId];
+        if (!currentTaskData) return;
+
+        // 2. 重置所有状态
+        resetFilters(false); // 重置筛选但不重复渲染
+        closeDrawer();
+        currentActiveCardId = null;
+
+        // 3. 渲染新任务的空间视图 (C1)
+        renderRooms(currentTaskData.rooms);
+
+        // 4. 渲染新任务的视频列表 (C3)
+        renderVideos(currentTaskData.videos);
+
+        // 5. 重置楼层视图到默认楼层
+        currentSelectedFloor = currentTaskData.defaultFloor;
+        const defaultTab = document.querySelector(`.floor-tab[data-floor="${currentSelectedFloor}"]`);
+        if(defaultTab) selectFloor(defaultTab, currentSelectedFloor);
+    }
+
+    // --- 渲染辅助函数 ---
+    function renderRooms(rooms) {
+        roomGridContainer.innerHTML = rooms.map(r => `
+            <div class="room-card" data-floor="${r.floor}" data-room-id="${r.id}" onclick="toggleRoomSelection(this, '${r.id}')">
+                <div class="room-title">${r.title}</div>
+                <div class="room-stats">
+                    <div class="stat-item"><span>待审核</span><span class="stat-val ${r.highlight ? 'highlight' : ''}">${r.stats[0]}</span></div>
+                    <div class="stat-item"><span>总片段</span><span class="stat-val">${r.stats[1]}</span></div>
+                    <div class="stat-item"><span>设备数</span><span class="stat-val">${r.stats[2]}</span></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderVideos(videos) {
+        videoListContainer.innerHTML = videos.map(v => `
+            <div class="video-card" id="${v.id}" data-room="${v.room}" data-status="${v.status}" data-type="${v.type}" style="${v.opacity ? 'opacity:'+v.opacity : ''}" onclick="openDrawer(this, '${v.id}')">
+                <div class="status-badge ${v.badgeClass || 'status-ai'}" id="badge-${v.id}">${v.badge}</div>
+                <div class="card-thumbnail">▶ 首帧<span class="duration-badge">${v.thumb}</span></div>
+                <div class="card-content">
+                    <div class="card-header"><span class="cam-name">${v.cam}</span><span class="card-time">${v.time}</span></div>
+                    <div class="card-summary" id="summary-${v.id}">${v.summary}</div>
+                    <div class="card-tags">
+                        ${v.tags.map(t => `<span class="tag" style="${v.tagStyle || ''}">${t}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+
+    // --- C层交互逻辑 (楼层、房间、筛选) ---
+    function selectFloor(tabElement, floorId) {
+        document.querySelectorAll('.floor-tab').forEach(t => t.classList.remove('active'));
+        tabElement.classList.add('active');
+        currentSelectedFloor = floorId;
+        document.querySelectorAll('.room-card').forEach(card => {
+            card.classList.toggle('hidden-floor', card.getAttribute('data-floor') !== floorId);
+        });
+        if (selectedRoomId) {
+             document.querySelectorAll('.room-card').forEach(c => c.classList.remove('selected'));
+             selectedRoomId = null;
+             applyFilters();
+        }
+        document.getElementById('breadcrumbText').innerHTML = `位置：园区 > ${floorId} > 全部房间`;
+    }
+
+    function toggleRoomSelection(roomCard, roomId) {
+        const isSelected = roomCard.classList.contains('selected');
+        document.querySelectorAll('.room-card').forEach(c => c.classList.remove('selected'));
+        if (!isSelected) {
+            roomCard.classList.add('selected');
+            selectedRoomId = roomId;
+        } else {
+            selectedRoomId = null;
+        }
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const filterType = document.getElementById('filterEventType').value;
+        const filterStatus = document.getElementById('filterStatus').value;
+        document.querySelectorAll('.video-card').forEach(card => {
+            const cardRoom = card.getAttribute('data-room');
+            const cardType = card.getAttribute('data-type');
+            const cardStatus = card.getAttribute('data-status');
+            let isMatch = true;
+            if (selectedRoomId && cardRoom !== selectedRoomId) isMatch = false;
+            if (filterType && cardType !== filterType) isMatch = false;
+            if (filterStatus && cardStatus !== filterStatus) isMatch = false;
+            card.classList.toggle('hidden', !isMatch);
+        });
+        closeDrawer();
+    }
+
+    function resetFilters(shouldApply = true) {
+        document.getElementById('filterEventType').value = "";
+        document.getElementById('filterStatus').value = "";
+        document.querySelectorAll('.room-card').forEach(c => c.classList.remove('selected'));
+        selectedRoomId = null;
+        if(shouldApply) applyFilters();
+    }
+
+    // --- B层交互逻辑 (抽屉) ---
+    function openDrawer(cardElement, cardId) {
+        currentActiveCardId = cardId;
+        document.querySelectorAll('.video-card').forEach(c => c.classList.remove('active-card'));
+        cardElement.classList.add('active-card');
+        const summaryEl = document.getElementById('summary-' + cardId);
+        if(summaryEl) drawerTextarea.value = summaryEl.innerText.replace('自动摘要：', '').replace('<b>[人工修正]</b> ', '');
+
+        // 动态模拟结构化数据 (简化版)
+        const structContainer = document.getElementById('structuredItemsContainer');
+        const cardType = cardElement.getAttribute('data-type');
+        let structHtml = '';
+        if (cardType === 'leak') {
+             structHtml = `
+                <div class="structured-item"><div>检测到漏水 <span class="ai-confidence">(99%)</span></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                <div class="structured-item"><div>检测到人员 <span class="ai-confidence">(20%)</span></div><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></div>`;
+        } else if (cardType === 'smoke') {
+              structHtml = `
+                <div class="structured-item"><div>检测到烟雾 <span class="ai-confidence">(95%)</span></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>`;
+        } else {
+             structHtml = `
+                <div class="structured-item"><div>检测到人员 <span class="ai-confidence">(98%)</span></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                <div class="structured-item"><div>检测到异常操作 <span class="ai-confidence">(45%)</span></div><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></div>`;
+        }
+        structContainer.innerHTML = structHtml;
+
+        drawer.classList.add('open');
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open');
+        if (currentActiveCardId) {
+             setTimeout(() => {
+                  const activeCard = document.querySelector('.video-card.active-card');
+                  if(activeCard) activeCard.classList.remove('active-card');
+                  currentActiveCardId = null;
+             }, 300);
+        }
+    }
+
+    function saveAnnotation() {
+        if (!currentActiveCardId) return;
+        const editedText = drawerTextarea.value;
+        const summaryEl = document.getElementById('summary-' + currentActiveCardId);
+        if(summaryEl) summaryEl.innerHTML = '<b>[人工修正]</b> ' + editedText;
+        const badge = document.getElementById('badge-' + currentActiveCardId);
+        if(badge) {
+            badge.className = 'status-badge status-human';
+            badge.innerHTML = '✅ 已核查';
+            badge.closest('.video-card').setAttribute('data-status', 'audited');
+        }
+        closeDrawer();
+    }
+
+    document.querySelector('.main-content-wrapper').addEventListener('click', function(e) {
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && !document.querySelector('.right-video-list').contains(e.target)) {
+            closeDrawer();
+        }
+    });
+
+    // --- 初始化 ---
+    // 页面加载时，手动触发一次任务切换，加载默认任务数据
+    document.addEventListener('DOMContentLoaded', () => {
+        const defaultTaskId = document.getElementById('mainTaskSelector').value;
+        switchTaskContext(defaultTaskId);
+    });
+
+</script>
+
+</body>
+</html>
