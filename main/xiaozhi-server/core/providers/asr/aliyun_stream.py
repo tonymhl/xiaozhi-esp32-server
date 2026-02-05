@@ -13,6 +13,10 @@ from datetime import datetime
 from config.logger import setup_logging
 from core.providers.asr.base import ASRProviderBase
 from core.providers.asr.dto.dto import InterfaceType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.connection import ConnectionHandler
 
 TAG = __name__
 logger = setup_logging()
@@ -144,9 +148,9 @@ class ASRProvider(ASRProviderBase):
                 await self.asr_ws.send(pcm_frame)
             except Exception as e:
                 logger.bind(tag=TAG).warning(f"发送音频失败: {str(e)}")
-                await self._cleanup(conn)
+                await self._cleanup()
 
-    async def _start_recognition(self, conn):
+    async def _start_recognition(self, conn: "ConnectionHandler"):
         """开始识别会话"""
         if self._is_token_expired():
             self._refresh_token()
@@ -192,14 +196,14 @@ class ASRProvider(ASRProviderBase):
         await self.asr_ws.send(json.dumps(start_request, ensure_ascii=False))
         logger.bind(tag=TAG).debug("已发送开始请求，等待服务器准备...")
 
-    async def _forward_results(self, conn):
+    async def _forward_results(self, conn: "ConnectionHandler"):
         """转发识别结果"""
         try:
             while not conn.stop_event.is_set():
                 # 获取当前连接的音频数据
                 audio_data = conn.asr_audio
                 try:
-                    response = await asyncio.wait_for(self.asr_ws.recv(), timeout=1.0)
+                    response = await self.asr_ws.recv()
                     result = json.loads(response)
 
                     header = result.get("header", {})
@@ -332,7 +336,7 @@ class ASRProvider(ASRProviderBase):
 
     async def close(self):
         """关闭资源"""
-        await self._cleanup(None)
+        await self._cleanup()
         if hasattr(self, 'decoder') and self.decoder is not None:
             try:
                 del self.decoder
