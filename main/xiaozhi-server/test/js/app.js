@@ -1,10 +1,10 @@
 // 主应用入口
-import { checkOpusLoaded, initOpusEncoder } from './core/audio/opus-codec.js?v=0127';
-import { getAudioPlayer } from './core/audio/player.js?v=0127';
-import { checkMicrophoneAvailability, isHttpNonLocalhost } from './core/audio/recorder.js?v=0127';
-import { initMcpTools } from './core/mcp/tools.js?v=0127';
-import { uiController } from './ui/controller.js?v=0127';
-import { log } from './utils/logger.js?v=0127';
+import { checkOpusLoaded, initOpusEncoder } from './core/audio/opus-codec.js?v=0205';
+import { getAudioPlayer } from './core/audio/player.js?v=0205';
+import { checkMicrophoneAvailability, isHttpNonLocalhost } from './core/audio/recorder.js?v=0205';
+import { initMcpTools } from './core/mcp/tools.js?v=0205';
+import { uiController } from './ui/controller.js?v=0205';
+import { log } from './utils/logger.js?v=0205';
 
 // 辅助函数：将Base64数据转换为Blob
 function dataURItoBlob(dataURI) {
@@ -254,7 +254,7 @@ class App {
                             if (!url || !token) {
                                 throw new Error('视觉分析失败：配置缺少接口地址(url)或令牌(token)');
                             }
-                            
+
                             log(`正在发送图片到视觉分析接口: ${url}`, 'info');
 
                             const deviceId = document.getElementById('deviceMac')?.value || '';
