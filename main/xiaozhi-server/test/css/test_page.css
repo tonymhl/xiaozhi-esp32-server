@@ -904,17 +904,6 @@ body {
 
 .mcp-tools-panel {
     padding: 20px;
-    transition: max-height 0.3s ease;
-    overflow: hidden;
-}
-
-.mcp-tools-panel.expanded {
-    max-height: 500px;
-}
-
-.mcp-tools-panel:not(.expanded) {
-    max-height: 0;
-    padding: 0 20px;
 }
 
 .mcp-tools-list {
