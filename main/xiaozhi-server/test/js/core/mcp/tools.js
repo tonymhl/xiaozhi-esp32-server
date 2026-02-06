@@ -1,4 +1,4 @@
-import { log } from '../../utils/logger.js?v=0127';
+import { log } from '../../utils/logger.js?v=0205';
 
 // ==========================================
 // MCP 工具管理逻辑
@@ -45,10 +45,7 @@ export async function initMcpTools() {
         mcpTools = [...defaultMcpTools];
     }
     renderMcpTools();
-    // Only setup event listeners if DOM elements exist
-    if (document.getElementById('toggleMcpTools')) {
-        setupMcpEventListeners();
-    }
+    setupMcpEventListeners();
 }
 
 /**
@@ -280,7 +277,6 @@ function deleteMcpProperty(index) {
  * 设置事件监听
  */
 function setupMcpEventListeners() {
-    const toggleBtn = document.getElementById('toggleMcpTools');
     const panel = document.getElementById('mcpToolsPanel');
     const addBtn = document.getElementById('addMcpToolBtn');
     const modal = document.getElementById('mcpToolModal');
@@ -297,32 +293,19 @@ function setupMcpEventListeners() {
     const propertyTypeSelect = document.getElementById('mcpPropertyType');
 
     // Return early if required elements don't exist (e.g., in test environment)
-    if (!toggleBtn || !panel || !addBtn || !modal || !closeBtn || !cancelBtn || !form || !addPropertyBtn) {
+    if (!panel || !addBtn || !modal || !closeBtn || !cancelBtn || !form || !addPropertyBtn) {
         return;
     }
-    toggleBtn.addEventListener('click', () => {
-        const isExpanded = panel.classList.contains('expanded');
-        panel.classList.toggle('expanded');
-        toggleBtn.textContent = isExpanded ? '收起' : '展开';
-    });
-    // 确保面板默认展开
-    panel.classList.add('expanded');
     addBtn.addEventListener('click', () => openMcpModal());
     closeBtn.addEventListener('click', closeMcpModal);
     cancelBtn.addEventListener('click', closeMcpModal);
     addPropertyBtn.addEventListener('click', addMcpProperty);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeMcpModal();
-    });
     form.addEventListener('submit', handleMcpSubmit);
 
     // 参数编辑模态框事件
     if (propertyModal && closePropertyBtn && cancelPropertyBtn && propertyForm && propertyTypeSelect) {
         closePropertyBtn.addEventListener('click', closePropertyModal);
         cancelPropertyBtn.addEventListener('click', closePropertyModal);
-        propertyModal.addEventListener('click', (e) => {
-            if (e.target === propertyModal) closePropertyModal();
-        });
         propertyForm.addEventListener('submit', handlePropertySubmit);
         propertyTypeSelect.addEventListener('change', updatePropertyRangeVisibility);
     }

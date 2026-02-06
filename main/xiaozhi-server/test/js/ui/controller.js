@@ -1,8 +1,8 @@
 // UI controller module
-import { loadConfig, saveConfig } from '../config/manager.js?v=0127';
-import { getAudioPlayer } from '../core/audio/player.js?v=0127';
-import { getAudioRecorder } from '../core/audio/recorder.js?v=0127';
-import { getWebSocketHandler } from '../core/network/websocket.js?v=0127';
+import { loadConfig, saveConfig } from '../config/manager.js?v=0205';
+import { getAudioPlayer } from '../core/audio/player.js?v=0205';
+import { getAudioRecorder } from '../core/audio/recorder.js?v=0205';
+import { getWebSocketHandler } from '../core/network/websocket.js?v=0205';
 
 // UI controller class
 class UIController {
@@ -248,13 +248,15 @@ class UIController {
             });
         });
 
-        // Click modal background to close
+        // 点击模态框背景关闭（仅对特定模态框禁用此功能）
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    if (modal.id === 'settingsModal') {
-                        saveConfig();
+                    // settingsModal、mcpToolModal、mcpPropertyModal 只能通过点击X关闭
+                    const nonClosableModals = ['settingsModal', 'mcpToolModal', 'mcpPropertyModal'];
+                    if (nonClosableModals.includes(modal.id)) {
+                        return; // 禁止点击背景关闭
                     }
                     this.hideModal(modal.id);
                 }
@@ -604,7 +606,7 @@ class UIController {
 
             if (isConnected) {
                 // Check microphone availability (check again after connection)
-                const { checkMicrophoneAvailability } = await import('../core/audio/recorder.js?v=0127');
+                const { checkMicrophoneAvailability } = await import('../core/audio/recorder.js?v=0205');
                 const micAvailable = await checkMicrophoneAvailability();
 
                 if (!micAvailable) {
