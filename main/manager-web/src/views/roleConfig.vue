@@ -21,6 +21,7 @@
                 <el-tag
                   v-for="tag in dynamicTags"
                   :key="tag.id"
+                  class="custom-tag"
                   closable
                   :disable-transitions="false"
                   @close="handleClose(tag.id)">
@@ -32,12 +33,12 @@
                   v-model="inputValue"
                   ref="saveTagInput"
                   size="small"
-                  maxLength="64"
+                  maxLength="20"
                   @keyup.enter.native="handleInputConfirm"
                   @blur="handleInputConfirm"
                 >
                 </el-input>
-                <el-button v-else size="small" @click="showInput">+ {{ $t("roleConfig.addTag") }}</el-button>
+                <el-button class="custom-tag-btn" v-else size="small" @click="showInput">+ {{ $t("roleConfig.addTag") }}</el-button>
               </div>
               <div class="header-actions">
                 <div class="hint-text">
@@ -752,7 +753,10 @@ export default {
 
       // 根据选中的语言筛选音色
       const filteredVoices = allVoices.filter(voice => {
-        if (!voice.languages) return false;
+        if (!voice.languages) {
+          // 对于没有语言信息的克隆音色，始终显示
+          return Boolean(voice.isClone);
+        }
         const languagesArray = voice.languages.split(/[、；;,，]/).map(lang => lang.trim()).filter(lang => lang);
         return languagesArray.includes(this.selectedLanguage);
       });
@@ -1261,6 +1265,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-radio-group {
+  .is-active {
+    .el-radio-button__inner {
+      &:hover {
+        color: #fff !important;
+      }
+    }
+  }
+}
 .welcome {
   min-width: 900px;
   height: 100vh;
@@ -1360,7 +1373,7 @@ export default {
       background: #e6ebff;
     }
     &::-webkit-scrollbar-thumb {
-      background: #409EFF;
+      background: #5778ff;
       border-radius: 8px;
     }
 }
@@ -1422,6 +1435,7 @@ export default {
 }
 
 .form-select {
+  flex: 1;
   width: 100%;
   height: 36px;
 }
@@ -1701,6 +1715,24 @@ export default {
 .tts-slider ::v-deep .el-input__inner {
   text-align: center;
   padding: 0 8px;
+}
+.custom-tag {
+  background: #e6ebff;
+  color: #5778ff;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: normal;
+  border: none;
+}
+.custom-tag-btn {
+  background: #e6ebff;
+  color: #5778ff;
+  border-radius: 8px;
+  font-weight: normal;
+  border: 1px solid #e6ebff;
+  &:hover {
+    background-color: #d0d8ff;
+  }
 }
 .input-new-tag {
   width: 90px;
