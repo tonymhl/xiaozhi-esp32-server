@@ -29,6 +29,7 @@ const formData = ref<Partial<AgentDetail>>({
   vadModelId: '',
   asrModelId: '',
   llmModelId: '',
+  slmModelId: '',
   vllmModelId: '',
   intentModelId: '',
   memModelId: '',
@@ -46,6 +47,7 @@ const displayNames = ref({
   vad: t('agent.pleaseSelect'),
   asr: t('agent.pleaseSelect'),
   llm: t('agent.pleaseSelect'),
+  slm: t('agent.pleaseSelect'),
   vllm: t('agent.pleaseSelect'),
   intent: t('agent.pleaseSelect'),
   memory: t('agent.pleaseSelect'),
@@ -94,6 +96,7 @@ const pickerShow = ref<{
   vad: false,
   asr: false,
   llm: false,
+  slm: false,
   vllm: false,
   intent: false,
   memory: false,
@@ -109,6 +112,7 @@ const inputValue = ref('')
 const inputVisible = ref(false)
 const languageOptions = ref([])
 const isVisibleReport = ref(false)
+const tempSummaryMemory = ref('')
 
 // 音频播放相关
 const audioRef = ref<UniApp.InnerAudioContext | null>(null)
@@ -162,6 +166,9 @@ function handleInputConfirm() {
   inputVisible.value = false
 }
 
+// 是否禁用历史记忆输入框
+const isMemoryDisabled = computed(() => formData.value.memModelId !== 'Memory_mem_local_short')
+
 // 打开上下文源编辑弹窗
 function openContextProviderDialog() {
   uni.navigateTo({
@@ -182,6 +189,7 @@ async function loadAgentDetail() {
 
   try {
     loading.value = true
+    tempSummaryMemory.value = ''
     const detail = await getAgentDetail(agentId.value)
     formData.value = { ...detail }
 
@@ -267,6 +275,7 @@ function updateDisplayNames() {
   displayNames.value.vad = getModelDisplayName('VAD', formData.value.vadModelId)
   displayNames.value.asr = getModelDisplayName('ASR', formData.value.asrModelId)
   displayNames.value.llm = getModelDisplayName('LLM', formData.value.llmModelId)
+  displayNames.value.slm = getModelDisplayName('LLM', formData.value.slmModelId)
   displayNames.value.vllm = getModelDisplayName('VLLM', formData.value.vllmModelId)
   displayNames.value.intent = getModelDisplayName('Intent', formData.value.intentModelId)
   displayNames.value.memory = getModelDisplayName('Memory', formData.value.memModelId)
@@ -274,7 +283,6 @@ function updateDisplayNames() {
 
   // 角色音色特殊处理
   displayNames.value.report = reportOptions.find(item => item.value === formData.value.chatHistoryConf)?.name
-  displayNames.value.language = formData.value.ttsLanguage
 
   isVisibleReport.value = formData.value.memModelId !== 'Memory_nomem'
 
@@ -432,6 +440,7 @@ function selectRoleTemplate(templateId: string) {
       vadModelId: template.vadModelId || formData.value.vadModelId,
       asrModelId: template.asrModelId || formData.value.asrModelId,
       llmModelId: template.llmModelId || formData.value.llmModelId,
+      slmModelId: template.llmModelId || formData.value.slmModelId,
       vllmModelId: template.vllmModelId || formData.value.vllmModelId,
       intentModelId: template.intentModelId || formData.value.intentModelId,
       memModelId: template.memModelId || formData.value.memModelId,
@@ -469,6 +478,9 @@ async function onPickerConfirm(type: string, value: any, name: string) {
     case 'llm':
       formData.value.llmModelId = value
       break
+    case 'slm':
+      formData.value.slmModelId = value
+      break
     case 'vllm':
       formData.value.vllmModelId = value
       break
@@ -482,6 +494,14 @@ async function onPickerConfirm(type: string, value: any, name: string) {
       displayNames.value.memory = name // 确保显示名称正确更新
       displayNames.value.report = reportOptions[1].name
       isVisibleReport.value = value !== 'Memory_nomem'
+      if (value === 'Memory_nomem' || value === 'Memory_mem_report_only') {
+        tempSummaryMemory.value = formData.value.summaryMemory
+        formData.value.summaryMemory = ''
+      }
+      else if (tempSummaryMemory.value !== '' && formData.value.summaryMemory === '') {
+        formData.value.summaryMemory = tempSummaryMemory.value
+        tempSummaryMemory.value = ''
+      }
       break
     case 'tts':
       formData.value.ttsModelId = value
@@ -827,6 +847,16 @@ onMounted(async () => {
           <wd-icon name="arrow-right" custom-class="text-[20rpx] text-[#9d9ea3]" />
         </view>
 
+        <view class="flex cursor-pointer items-center justify-between border border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] transition-all duration-300 active:bg-[#eef3ff]" @click="openPicker('slm')">
+          <text class="text-[28rpx] text-[#232338] font-medium">
+            {{ t('agent.slm') }}
+          </text>
+          <text class="mx-[16rpx] flex-1 text-right text-[26rpx] text-[#65686f]">
+            {{ displayNames.slm }}
+          </text>
+          <wd-icon name="arrow-right" custom-class="text-[20rpx] text-[#9d9ea3]" />
+        </view>
+
         <view class="flex cursor-pointer items-center justify-between border border-[#eeeeee] rounded-[12rpx] bg-[#f5f7fb] p-[20rpx] transition-all duration-300 active:bg-[#eef3ff]" @click="openPicker('vllm')">
           <text class="text-[28rpx] text-[#232338] font-medium">
             {{ t('agent.vllm') }}
@@ -942,8 +972,9 @@ onMounted(async () => {
         <textarea
           v-model="formData.summaryMemory"
           :placeholder="t('agent.memoryContent')"
-          disabled
-          class="box-border h-[500rpx] w-full resize-none break-words break-all border border-[#eeeeee] rounded-[12rpx] bg-[#f0f0f0] p-[20rpx] text-[26rpx] text-[#65686f] leading-[1.6] opacity-80 outline-none"
+          :disabled="isMemoryDisabled"
+          :style="isMemoryDisabled ? 'background: #f0f0f0' : ''"
+          class="box-border h-[500rpx] w-full resize-none break-words break-all border border-[#eeeeee] rounded-[12rpx] p-[20rpx] text-[26rpx] leading-[1.6] opacity-80 outline-none"
         />
       </view>
     </view>
@@ -980,6 +1011,13 @@ onMounted(async () => {
       :actions="modelOptions.LLM && modelOptions.LLM.map(item => ({ name: item.modelName, value: item.id }))"
       @close="onPickerCancel('llm')"
       @select="({ item }) => onPickerConfirm('llm', item.value, item.name)"
+    />
+
+    <wd-action-sheet
+      v-model="pickerShow.slm"
+      :actions="modelOptions.LLM && modelOptions.LLM.map(item => ({ name: item.modelName, value: item.id }))"
+      @close="onPickerCancel('slm')"
+      @select="({ item }) => onPickerConfirm('slm', item.value, item.name)"
     />
 
     <wd-action-sheet
