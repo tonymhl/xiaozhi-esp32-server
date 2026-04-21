@@ -37,7 +37,7 @@ from core.auth import AuthenticationError
 from config.config_loader import get_private_config_from_api
 from core.providers.tts.dto.dto import ContentType, TTSMessageDTO, SentenceType
 from config.logger import setup_logging, build_module_string, create_connection_logger
-from config.manage_api_client import DeviceNotFoundException, DeviceBindException
+from config.manage_api_client import DeviceNotFoundException, DeviceBindException, generate_and_save_chat_title
 from core.utils.prompt_manager import PromptManager
 from core.utils.voiceprint_provider import VoiceprintProvider
 from core.utils.util import get_system_error_response
@@ -159,6 +159,7 @@ class ConnectionHandler:
         self.client_voice_window = deque(maxlen=5)
         self.first_activity_time = 0.0  # 记录首次活动的时间（毫秒）
         self.last_activity_time = 0.0  # 统一的活动时间戳（毫秒）
+        self.vad_last_voice_time = 0.0  # 记录用户最后一次说话的时间（毫秒）
         self.client_voice_stop = False
         self.last_is_voice = False
 
@@ -283,6 +284,26 @@ class ConnectionHandler:
     async def _save_and_close(self, ws):
         """保存记忆并关闭连接"""
         try:
+            # 守护线程1：独立生成标题（不依赖记忆模型）
+            if self.session_id:
+                def generate_title_task():
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(
+                            generate_and_save_chat_title(self.session_id)
+                        )
+                    except Exception as e:
+                        self.logger.bind(tag=TAG).error(f"生成标题失败: {e}")
+                    finally:
+                        try:
+                            loop.close()
+                        except Exception:
+                            pass
+
+                threading.Thread(target=generate_title_task, daemon=True).start()
+
+            # 守护线程2：走老流程记忆保存（仅记忆，不含标题）
             if self.memory:
                 # 使用线程池异步保存记忆
                 def save_memory_task():
@@ -838,20 +859,27 @@ class ConnectionHandler:
         self.dialogue.update_system_message(self.prompt)
 
     def chat(self, query, depth=0):
+        # 保存当前任务的sentence_id到局部变量，避免被新任务覆盖
+        current_sentence_id = None
+
         if query is not None:
             self.logger.bind(tag=TAG).info(f"大模型收到用户消息: {query}")
 
         # 为最顶层时新建会话ID和发送FIRST请求
         if depth == 0:
-            self.sentence_id = str(uuid.uuid4().hex)
+            current_sentence_id = str(uuid.uuid4().hex)
+            self.sentence_id = current_sentence_id  # 更新共享属性
             self.dialogue.put(Message(role="user", content=query))
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
-                    sentence_id=self.sentence_id,
+                    sentence_id=current_sentence_id,
                     sentence_type=SentenceType.FIRST,
                     content_type=ContentType.ACTION,
                 )
             )
+        else:
+            # 递归调用时，使用当前的sentence_id
+            current_sentence_id = self.sentence_id
 
         # 设置最大递归深度，避免无限循环，可根据实际需求调整
         MAX_DEPTH = 5
@@ -976,7 +1004,6 @@ class ConnectionHandler:
         # 支持多个并行工具调用 - 使用列表存储
         tool_calls_list = []  # 格式: [{"id": "", "name": "", "arguments": ""}]
         content_arguments = ""
-        self.client_abort = False
         emotion_flag = True
         try:
             for response in llm_responses:
@@ -1013,7 +1040,7 @@ class ConnectionHandler:
                         response_message.append(content)
                         self.tts.tts_text_queue.put(
                             TTSMessageDTO(
-                                sentence_id=self.sentence_id,
+                                sentence_id=current_sentence_id,
                                 sentence_type=SentenceType.MIDDLE,
                                 content_type=ContentType.TEXT,
                                 content_detail=content,
@@ -1023,7 +1050,7 @@ class ConnectionHandler:
             self.logger.bind(tag=TAG).error(f"LLM stream processing error: {e}")
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
-                    sentence_id=self.sentence_id,
+                    sentence_id=current_sentence_id,
                     sentence_type=SentenceType.MIDDLE,
                     content_type=ContentType.TEXT,
                     content_detail=get_system_error_response(self.config),
@@ -1032,7 +1059,7 @@ class ConnectionHandler:
             if depth == 0:
                 self.tts.tts_text_queue.put(
                     TTSMessageDTO(
-                        sentence_id=self.sentence_id,
+                        sentence_id=current_sentence_id,
                         sentence_type=SentenceType.LAST,
                         content_type=ContentType.ACTION,
                     )
@@ -1082,11 +1109,12 @@ class ConnectionHandler:
                         f"工具调用统计更新: 当前轮次={current_turn}"
                     )
 
-                # 如需要大模型先处理一轮，添加相关处理后的日志情况
+                # LLM 流式阶段已播报过的文本
+                streamed_text = ""
                 if len(response_message) > 0:
-                    text_buff = "".join(response_message)
-                    self.tts_MessageText = text_buff
-                    self.dialogue.put(Message(role="assistant", content=text_buff))
+                    streamed_text = "".join(response_message)
+                    self.tts.store_tts_text(current_sentence_id, streamed_text)
+                    self.dialogue.put(Message(role="assistant", content=streamed_text))
                 response_message.clear()
 
                 # 收集所有工具调用的 Future
@@ -1134,12 +1162,12 @@ class ConnectionHandler:
 
                 # 统一处理工具调用结果
                 if tool_results:
-                    self._handle_function_result(tool_results, depth=depth)
+                    self._handle_function_result(tool_results, depth=depth, streamed_text=streamed_text)
 
         # 存储对话内容
         if len(response_message) > 0:
             text_buff = "".join(response_message)
-            self.tts_MessageText = text_buff
+            self.tts.store_tts_text(current_sentence_id, text_buff)
             self.dialogue.put(Message(role="assistant", content=text_buff))
 
             # 更新工具调用统计：如果没有调用工具，增加计数
@@ -1149,7 +1177,7 @@ class ConnectionHandler:
         if depth == 0:
             self.tts.tts_text_queue.put(
                 TTSMessageDTO(
-                    sentence_id=self.sentence_id,
+                    sentence_id=current_sentence_id,
                     sentence_type=SentenceType.LAST,
                     content_type=ContentType.ACTION,
                 )
@@ -1194,7 +1222,7 @@ class ConnectionHandler:
         result = "、".join(datas)
         return result
 
-    def _handle_function_result(self, tool_results, depth):
+    def _handle_function_result(self, tool_results, depth, streamed_text=""):
         need_llm_tools = []
 
         for result, tool_call_data in tool_results:
@@ -1202,9 +1230,15 @@ class ConnectionHandler:
                 Action.RESPONSE,
                 Action.NOTFOUND,
                 Action.ERROR,
-            ]:  # 直接回复前端
+            ]:
                 text = result.response if result.response else result.result
-                self.tts.tts_one_sentence(self, ContentType.TEXT, content_detail=text)
+                if streamed_text and text in streamed_text:
+                    self.logger.bind(tag=TAG).debug(
+                        f"Skipping duplicate TTS for tool {tool_call_data['name']}, already streamed"
+                    )
+                else:
+                    self.tts.tts_one_sentence(self, ContentType.TEXT, content_detail=text)
+                    self.tts.store_tts_text(self.sentence_id, text)
                 self.dialogue.put(Message(role="assistant", content=text))
             elif result.action == Action.REQLLM:
                 # 收集需要 LLM 处理的工具
@@ -1424,6 +1458,7 @@ class ConnectionHandler:
         self.client_voice_stop = False
         self.client_voice_window.clear()
         self.last_is_voice = False
+        self.vad_last_voice_time = 0.0
 
         # Clear ASR buffers
         self.asr_audio.clear()
