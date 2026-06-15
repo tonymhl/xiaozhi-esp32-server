@@ -1414,6 +1414,14 @@ export default {
   'featureManagement.cancel': 'Cancelar',
   'featureManagement.resetSuccess': 'Configuração de funcionalidades redefinida com sucesso',
   'featureManagement.noChanges': 'Nenhuma alteração para salvar',
+  'featureManagement.saving': 'Salvando...',
+  'featureManagement.groupName.featureManagement': 'Interruptor de Módulo de Funcionalidade',
+  'featureManagement.groupName.voiceManagement': 'Configuração de Visibilidade do Agente',
+  'featureManagement.groupDescription.featureManagement': 'Controlar o status de ativação dos módulos de funcionalidade principal',
+  'featureManagement.groupDescription.voiceManagement': 'Configurar quais funcionalidades são visíveis e disponíveis para agentes (assistentes de IA)',
+  'featureManagement.moduleCount': '{count} módulos no total',
+  'featureManagement.enabled': 'Ativado',
+  'featureManagement.disabled': 'Desativado',
 
   // Nomes e descrições de funcionalidades
   'feature.voiceprintRecognition.name': 'Reconhecimento de Impressão Vocal',
@@ -1434,7 +1442,6 @@ export default {
   // Página de Gerenciamento de Lista de Contatos
   'addressBookManagement.title': 'Gerenciamento de Lista de Contatos',
   'addressBookManagement.searchPlaceholder': 'Pesquisar nome do dispositivo ou endereço MAC',
-  'addressBookManagement.search': 'Pesquisar',
   'addressBookManagement.selectAgent': 'Selecione um agente',
   'addressBookManagement.name': 'Nome da Lista de Contatos',
   'addressBookManagement.description': 'Descrição da Lista de Contatos',

@@ -1414,6 +1414,14 @@ export default {
   'featureManagement.cancel': 'Cancel',
   'featureManagement.resetSuccess': 'Feature configuration reset successfully',
   'featureManagement.noChanges': 'No changes to save',
+  'featureManagement.saving': 'Saving...',
+  'featureManagement.groupName.featureManagement': 'Feature Module Switch',
+  'featureManagement.groupName.voiceManagement': 'Agent Visible Configuration',
+  'featureManagement.groupDescription.featureManagement': 'Control the enable status of core feature modules',
+  'featureManagement.groupDescription.voiceManagement': 'Configure which features are visible and available to agents (AI assistants)',
+  'featureManagement.moduleCount': '{count} modules in total',
+  'featureManagement.enabled': 'Enabled',
+  'featureManagement.disabled': 'Disabled',
 
   // Feature names and descriptions
   'feature.voiceprintRecognition.name': 'Voiceprint Recognition',
@@ -1434,7 +1442,6 @@ export default {
   // Address Book Management page
   'addressBookManagement.title': 'Address Book Management',
   'addressBookManagement.searchPlaceholder': 'Search device name or MAC address',
-  'addressBookManagement.search': 'Search',
   'addressBookManagement.selectAgent': 'Please select agent',
   'addressBookManagement.name': 'Address Book Name',
   'addressBookManagement.description': 'Address Book Description',
