@@ -1414,6 +1414,14 @@ export default {
   'featureManagement.cancel': 'Abbrechen',
   'featureManagement.resetSuccess': 'Funktionskonfiguration erfolgreich zurückgesetzt',
   'featureManagement.noChanges': 'Keine Änderungen zum Speichern',
+  'featureManagement.saving': 'Speichern...',
+  'featureManagement.groupName.featureManagement': 'Funktionsmodul-Schalter',
+  'featureManagement.groupName.voiceManagement': 'Agent-Sichtbarkeitskonfiguration',
+  'featureManagement.groupDescription.featureManagement': 'Aktivierungsstatus der Kernfunktionsmodule steuern',
+  'featureManagement.groupDescription.voiceManagement': 'Konfigurieren, welche Funktionen für Agenten (KI-Assistenten) sichtbar und verfügbar sind',
+  'featureManagement.moduleCount': '{count} Module insgesamt',
+  'featureManagement.enabled': 'Aktiviert',
+  'featureManagement.disabled': 'Deaktiviert',
 
   // Feature names and descriptions
   'feature.voiceprintRecognition.name': 'Stimmerkennung',
@@ -1434,7 +1442,6 @@ export default {
   // Adressbuch Verwaltungsseite
   'addressBookManagement.title': 'Adressbuchverwaltung',
   'addressBookManagement.searchPlaceholder': 'Gerätename oder MAC-Adresse suchen',
-  'addressBookManagement.search': 'Suchen',
   'addressBookManagement.selectAgent': 'Bitte Agent auswählen',
   'addressBookManagement.name': 'Adressbuchname',
   'addressBookManagement.description': 'Adressbuchbeschreibung',
