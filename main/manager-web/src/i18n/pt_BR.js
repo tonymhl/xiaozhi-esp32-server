@@ -352,6 +352,8 @@ export default {
 
   // Replacement word management page related
   'replacementWordManagement.pageTitle': 'Gerenciamento de Palavras de Substituição',
+  'replacementWordManagement.searchPlaceholder': 'Digite o nome do arquivo para pesquisar',
+  'replacementWordManagement.search': 'Pesquisar',
   'replacementWordManagement.fileName': 'Nome do Arquivo',
   'replacementWordManagement.replacementWordCount': 'Quantidade de Palavras de Substituição',
   'replacementWordManagement.replacementWordContent': 'Conteúdo Substituto',
@@ -591,6 +593,7 @@ export default {
 
   // Página de gerenciamento de dicionário
   'dictManagement.pageTitle': 'Gerenciamento de Dicionário',
+  'dictManagement.dictTypeCategory': 'Categoria do Dicionário',
   'dictManagement.searchPlaceholder': 'Por favor, insira o rótulo do dicionário para pesquisar',
   'dictManagement.search': 'Pesquisar',
   'dictManagement.dictTypeName': 'Nome do Tipo de Dicionário',
@@ -706,6 +709,9 @@ export default {
   'common.cancel': 'Cancelar',
   'common.sensitive': 'Sensível',
   'common.loading': 'Carregando',
+  'common.copySuccess': 'Cópia bem-sucedida',
+  'common.copyFailed': 'Falha ao copiar',
+  'common.copyAddress': 'Copiar endereço',
 
   // Troca de idioma
   'language.zhCN': '中文简体',
