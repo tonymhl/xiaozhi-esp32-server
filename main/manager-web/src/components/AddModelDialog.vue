@@ -288,8 +288,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/styles/global.scss';
+
 ::v-deep .el-dialog {
   margin-top: 6vh !important;
+}
+::v-deep .el-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+  @include scrollbar-style;
 }
 .add-model-dialog {
   .section-header {
