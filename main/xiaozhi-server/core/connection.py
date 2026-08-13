@@ -808,6 +808,7 @@ class ConnectionHandler:
                 self.headers.get("client-id", self.headers.get("device-id")),
             )
             private_config["delete_audio"] = bool(self.config.get("delete_audio", True))
+            private_config["tts_timeout"] = self.config.get("tts_timeout", 15)
             self.logger.bind(tag=TAG).info(
                 f"{time.time() - begin_time} 秒，异步获取差异化配置成功: {json.dumps(filter_sensitive_info(private_config), ensure_ascii=False)}"
             )
