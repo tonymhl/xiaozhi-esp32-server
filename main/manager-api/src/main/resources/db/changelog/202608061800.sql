@@ -20,13 +20,3 @@ WHERE `id` = 'LLM_DoubaoLLM'
     `remark` LIKE '%Doubao-1.5-pro%'
     OR `remark` LIKE '%doubao-1-5-pro-32k-250115%'
   );
-
-UPDATE `ai_model_config`
-SET `config_json` = JSON_SET(`config_json`, '$.model_name', 'gemini-3.6-flash')
-WHERE `id` = 'LLM_GeminiLLM'
-  AND JSON_UNQUOTE(JSON_EXTRACT(`config_json`, '$.model_name')) = 'gemini-2.0-flash';
-
-UPDATE `ai_model_config`
-SET `remark` = REPLACE(`remark`, 'gemini-2.0-flash', 'gemini-3.6-flash')
-WHERE `id` = 'LLM_GeminiLLM'
-  AND `remark` LIKE '%gemini-2.0-flash%';
