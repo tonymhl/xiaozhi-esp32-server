@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.repository.IRepository;
 
+import cn.hutool.core.collection.CollUtil;
 import lombok.AllArgsConstructor;
 import xiaozhi.common.constant.Constant;
 import xiaozhi.common.exception.ErrorCode;
@@ -28,7 +30,6 @@ import xiaozhi.common.service.impl.BaseServiceImpl;
 import xiaozhi.common.user.UserDetail;
 import xiaozhi.common.utils.ConvertUtils;
 import xiaozhi.common.utils.JsonUtils;
-import xiaozhi.common.utils.ToolUtil;
 import xiaozhi.modules.agent.dao.AgentDao;
 import xiaozhi.modules.agent.dao.AgentTagDao;
 import xiaozhi.modules.agent.dto.AgentCreateDTO;
@@ -242,13 +243,13 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
                         .map(DeviceEntity::getAgentId)
                         .distinct()
                         .collect(Collectors.toList());
-                if (ToolUtil.isNotEmpty(agentIds)) {
+                if (CollUtil.isNotEmpty(agentIds)) {
                     w.or().in("id", agentIds);
                 }
 
                 // 按标签名搜索
                 List<String> tagAgentIds = agentTagService.getAgentIdsByTagName(keyword);
-                if (ToolUtil.isNotEmpty(tagAgentIds)) {
+                if (CollUtil.isNotEmpty(tagAgentIds)) {
                     w.or().in("id", tagAgentIds);
                 }
             });
@@ -290,7 +291,7 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
 
         // 获取标签列表
         List<AgentTagEntity> tags = agentTagDao.selectByAgentId(agent.getId());
-        if (ToolUtil.isNotEmpty(tags)) {
+        if (CollUtil.isNotEmpty(tags)) {
             dto.setTags(tags.stream().map(this::convertTagToDTO).collect(Collectors.toList()));
         }
 
@@ -482,10 +483,10 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
                     .toList();
 
             if (!toUpdate.isEmpty()) {
-                agentPluginMappingService.updateBatchById(toUpdate);
+                agentPluginMappingService.updateBatchById(toUpdate, IRepository.DEFAULT_BATCH_SIZE);
             }
             if (!toInsert.isEmpty()) {
-                agentPluginMappingService.saveBatch(toInsert);
+                agentPluginMappingService.saveBatch(toInsert, IRepository.DEFAULT_BATCH_SIZE);
             }
 
             // 5. 删除本次不在提交列表里的插件映射
@@ -494,7 +495,7 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
                     .map(AgentPluginMapping::getId)
                     .toList();
             if (!toDelete.isEmpty()) {
-                agentPluginMappingService.removeBatchByIds(toDelete);
+                agentPluginMappingService.removeByIds(toDelete);
             }
         }
 
@@ -676,7 +677,7 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
             mapping.setPluginId(pluginId);
 
             Map<String, Object> paramInfo = new HashMap<>();
-            List<Map<String, Object>> fields = JsonUtils.parseObject(provider.getFields(), List.class);
+            List<Map<String, Object>> fields = JsonUtils.parseMapList(provider.getFields());
             if (fields != null) {
                 for (Map<String, Object> field : fields) {
                     paramInfo.put((String) field.get("key"), field.get("default"));
@@ -687,7 +688,7 @@ public class AgentServiceImpl extends BaseServiceImpl<AgentDao, AgentEntity> imp
             toInsert.add(mapping);
         }
         // 保存默认插件
-        agentPluginMappingService.saveBatch(toInsert);
+        agentPluginMappingService.saveBatch(toInsert, IRepository.DEFAULT_BATCH_SIZE);
         agentSnapshotService.createSnapshot(entity.getId(), "initial");
         return entity.getId();
     }
